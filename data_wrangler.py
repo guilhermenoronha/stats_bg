@@ -18,7 +18,7 @@ def _get_name_id_mapping(SHEET_NAME, KEY, VALUE):
 def _create_persons_table():
     try:
         url = _get_url('persons')
-        persons  = pd.read_csv(url, usecols=[0,1])
+        persons  = pd.read_csv(url)
         persons.to_sql(name='PERSONS', con=_conn, if_exists='replace', index=False)
         print(f'Table PERSONS was successfully created with {len(persons)} rows.')
     except Exception as e:
@@ -36,16 +36,13 @@ def _create_games_table():
 
 def _create_attendances_table():
     try:
-        persons_url = _get_url('persons')
-        matches_url = _get_url('matches')
-        persons  = pd.read_csv(persons_url, usecols=[0,1])
-        matches = pd.read_csv(matches_url)
+        persons  = pd.read_csv(_get_url('persons'))
+        matches = pd.read_csv(_get_url('matches'))
         # mapping persons names to ids
         name_id_mapping = _get_name_id_mapping('persons', 'NAME', 'ID')
         name_id_mapping.update({'host':'host', 'date':'date', 'game':'game'})
         # game column isn't needed in the attendances_table
         tmp_attendances = matches.drop(columns=['game'])
-        tmp_attendances = tmp_attendances[tmp_attendances['host'].notnull()]
         # changing columns to ids
         tmp_attendances.columns = tmp_attendances.columns.map(name_id_mapping)
         # changing host names to ids
@@ -63,6 +60,8 @@ def _create_attendances_table():
             person['DATE'] = tmp_attendances[tmp_attendances[i] == True]['date']
             person['PERSON_ID'] = i
             person['IS_HOST'] = tmp_attendances['host'] == i
+            # keeping only the first record each person attended for each date.
+            person = person.drop_duplicates(subset=['DATE', 'PERSON_ID'], keep='first')
             attendances = pd.concat([attendances, person])
         attendances.to_sql(name='ATTENDANCES', con=_conn, if_exists='replace', index=False)
         print(f'Table ATTENDANCES was successfully created with {len(attendances)} rows.')
@@ -75,7 +74,7 @@ def _create_matches_table():
         url_persons = _get_url('persons')
         matches = pd.read_csv(url_matches)
         persons = pd.read_csv(url_persons)
-        final_matches = pd.DataFrame(columns = ['ID', 'DATE', 'PERSON_ID', 'GAME_ID', 'SCORE'])
+        final_matches = pd.DataFrame(columns = ['DATE', 'ID', 'PERSON_ID', 'GAME_ID', 'SCORE'])
         # host column isn't needed in matches table 
         matches.drop(columns=['host'], inplace=True)
         # mapping persons names to ids
@@ -90,7 +89,7 @@ def _create_matches_table():
         # looping over persons
         for i in range(1, len(persons) + 1):
             tmp_matches = matches[matches[i].notnull()]
-            person_matches = pd.DataFrame(columns = ['ID', 'DATE', 'PERSON_ID', 'GAME_ID', 'SCORE'])
+            person_matches = pd.DataFrame(columns = ['DATE', 'ID', 'PERSON_ID', 'GAME_ID', 'SCORE'])
             person_matches['ID'] = tmp_matches['ID']
             person_matches['DATE'] = tmp_matches['date']
             person_matches['PERSON_ID'] = i

@@ -2,7 +2,11 @@
 
 This repo is intended to collect and analyze data about the game sessions realized into the Clube do Boardgame da Zoeira. All the data is manually annotated onto the Google Sheets. Then, the current script does the data wrangling, converting all the data into a structured one to be queried using SQL. 
 
-The current version of this project is: 1.0
+The current version of this project is: 1.1
+
+## WHAT IS NEW?
+
+- 1.1: Bugfixed the attendances table. See issue #1.
 
 ## OBJECTIVES
 
