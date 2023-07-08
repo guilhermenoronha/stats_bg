@@ -70,10 +70,10 @@ def _create_attendances_table():
 
 def _create_matches_table():
     try:
-        url_matches = _get_url('matches')
-        url_persons = _get_url('persons')
-        matches = pd.read_csv(url_matches)
-        persons = pd.read_csv(url_persons)
+        matches = pd.read_csv(_get_url('matches'))
+        persons = pd.read_csv(_get_url('persons'))
+        games = pd.read_csv(_get_url('games'))
+        games['ID'] = range(1, len(games) + 1)
         final_matches = pd.DataFrame(columns = ['DATE', 'ID', 'PERSON_ID', 'GAME_ID', 'SCORE'])
         # host column isn't needed in matches table 
         matches.drop(columns=['host'], inplace=True)
@@ -84,7 +84,7 @@ def _create_matches_table():
         # creating ID column
         matches['ID'] = range(1, len(matches) + 1)
         # mapping game names to id
-        game_id_mapping = _get_name_id_mapping('games', 'NAME', 'ID_OWNER')
+        game_id_mapping = games.set_index('NAME')['ID'].to_dict()
         matches['game'] = matches['game'].map(game_id_mapping)
         # looping over persons
         for i in range(1, len(persons) + 1):
