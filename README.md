@@ -2,12 +2,13 @@
 
 This repo is intended to collect and analyze data about the game sessions realized into the Clube do Boardgame da Zoeira. All the data is manually annotated onto the Google Sheets. Then, the current script does the data wrangling, converting all the data into a structured one to be queried using SQL. 
 
-The current version of this project is: 1.2
+The current version of this project is: 1.3
 
 ## WHAT IS NEW?
 
 - 1.1: Bugfixed the attendances table. See [#1](/../../issues/1).
 - 1.2: Bugfixed the matches table. See [#2](/../../issues/2)
+- 1.3: Implemented new columns. See [#3](/../../issues/3)  
 
 ## OBJECTIVES
 
@@ -21,10 +22,14 @@ At the moment, the data is distributed into four tables:
 - PERSONS: with all players which attended to one or more sessions. This table has the following columns:
     - ID
     - NAME
+    - LAST_DATE_ATTENDED
+    - DAYS_SINCE_LAST_ATTENDANCE
 - GAMES: the list of all games which were played into one or more sessions and its person's owners. This table has the following columns:
     - ID
     - OWNER_ID: the person id who owns the game.
     - NAME
+    - LAST_DATE_PLAYED
+    - DAYS_SINCE_LAST_PLAY
 - ATTENDANCES: the list of every session registered. The attendances' table have the date, who was the host and the persons IDs. This table has the following columns:
     - DATE
     - IS_HOST: true or false

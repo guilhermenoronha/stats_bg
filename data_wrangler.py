@@ -17,8 +17,15 @@ def _get_name_id_mapping(SHEET_NAME, KEY, VALUE):
 
 def _create_persons_table():
     try:
-        url = _get_url('persons')
-        persons  = pd.read_csv(url)
+        persons  = pd.read_csv(_get_url('persons'))
+        matches = pd.read_csv(_get_url('matches'))
+        matches.drop(columns=['game', 'host'], inplace=True)
+        # mapping the person name with the last the day he/she attended to a match 
+        dict_ = {}
+        for i in range(1, len(matches.columns)):
+            dict_.update({matches.columns[i] : matches.loc[matches.iloc[:, i].notnull(), 'date'].iloc[-1]})
+        persons['LAST_DATE_ATTENDED'] = persons['NAME'].map(dict_)
+        persons['DAYS_SINCE_LAST_ATTENDANCE'] = (pd.to_datetime('today') - pd.to_datetime(persons['LAST_DATE_ATTENDED'], format='%d/%m/%y')).dt.days 
         persons.to_sql(name='PERSONS', con=_conn, if_exists='replace', index=False)
         print(f'Table PERSONS was successfully created with {len(persons)} rows.')
     except Exception as e:
@@ -26,9 +33,14 @@ def _create_persons_table():
 
 def _create_games_table():
     try:
-        url = _get_url('games')
-        games = pd.read_csv(url)
+        games = pd.read_csv(_get_url('games'))
         games['ID'] = range(1, len(games) + 1)
+        # Create column with the date the game was last played
+        matches = pd.read_csv(_get_url('matches'))
+        matches.drop_duplicates(subset=['game'], keep='last', inplace=True)
+        games['LAST_DATE_PLAYED'] = games['NAME'].map(matches.set_index('game')['date'])
+        # Created calculated column with the amount of days a game was last played
+        games['DAYS_SINCE_LAST_PLAYED'] = (pd.to_datetime('today') - pd.to_datetime(games['DATE_LAST_PLAYED'], format='%d/%m/%y')).dt.days 
         games.to_sql(name='GAMES', con=_conn, if_exists='replace', index=False)
         print(f'Table GAMES was successfully created with {len(games)} rows.')
     except Exception as e:
