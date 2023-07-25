@@ -1,14 +1,18 @@
+[![](https://img.shields.io/static/v1?label=python&message=3.11&color=blue&logo=python)](https://www.python.org/downloads/release/python-3110/)
+[![](https://img.shields.io/static/v1?label=version&message=1.4&color=green)](https://img.shields.io/static/v1?label=version&message=1.4&color=green)
+
 # STATS FOR THE CLUBE DO BOARDGAME DA ZOEIRA
 
 This repo is intended to collect and analyze data about the game sessions realized into the Clube do Boardgame da Zoeira. All the data is manually annotated onto the Google Sheets. Then, the current script does the data wrangling, converting all the data into a structured one to be queried using SQL. 
 
 The current version of this project is: 1.3
 
-## WHAT IS NEW?
+## WHAT'S NEW?
 
 - 1.1: Bugfixed the attendances table. See [#1](/../../issues/1).
 - 1.2: Bugfixed the matches table. See [#2](/../../issues/2)
 - 1.3: Implemented new columns. See [#3](/../../issues/3)  
+- 1.4: Implemented Ludopedia scrapper. See[#4](/../../issues/4) 
 
 ## OBJECTIVES
 
@@ -42,6 +46,3 @@ At the moment, the data is distributed into four tables:
     - SCORE
 
 All the tables are saved into a SQLite database to be used later into a DataViz tool or to be queried in any SQL Tool.
-
-# ABOUT THE CLUBE DO BOARDGAME DA ZOEIRA
-Founded in 2015, the CLUBE DO BOARDGAME DA ZOEIRA is a club to play board games. It is hosted in Minas Gerais and was founded by the friends Guilherme, Frederico, Cezar, Daniel, Amilton, and Alfredo. As the years passed by, some former members left the club and another members joined. The core idea of the club was to build a board game library. The club implemented a consortium where every member paid a fee every month. The money collected was given to a different member each member who used to buy new board games. As the library grew larger, the consortium was abandoned and the members kept buying games independently.
