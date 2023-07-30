@@ -8,14 +8,11 @@ from contextlib import closing
 
 class LudopediaScrapper:
 
-    def __init__(self, access_key : str) -> None:
+    def __init__(self) -> None:
         """Constructor which creates a header for a good request in https://ludopedia.com.br
             The user must have an account and a access key on this site before call this constructor
-
-        Args:
-            access_key (str): the user access key
         """
-        self.headers = {'Authorization' : f'Bearer {access_key}'}
+        self.headers = {'Authorization' : f'Bearer {config("ACCESS_KEY")}'}
 
     def _get_ludopedia_response(self, url : str) -> requests.Response:
         """Method to request the Ludopedia url response. Its append the url with the headers added on constructor 
@@ -59,7 +56,7 @@ class LudopediaScrapper:
         Returns:
             dict: a dict with all user's board game collection  
         """
-        url = f'https://ludopedia.com.br/api/v1/colecao?id_usuario={user_id}&lista=colecao'
+        url = f'https://ludopedia.com.br/api/v1/colecao?id_usuario={user_id}&lista=colecao&rows=100'
         response = self._get_ludopedia_response(url)
         data = response.json()
         return data.get('colecao')
@@ -77,6 +74,44 @@ class LudopediaScrapper:
         response = self._get_ludopedia_response(url)
         return response.json()
     
+    def get_game_by_name(self, name : str) -> dict:
+        """Get board game by name
+
+        Args:
+            name (str): whole name of board game
+
+        Raises:
+            ValueError: raises error if response returns no data
+
+        Returns:
+            dict: board game metadata
+        """
+        url = f'https://ludopedia.com.br/api/v1/jogos?search={name.replace(" ", "%20")}'
+        response = self._get_ludopedia_response(url)
+        data = response.json()
+        if len(data) != 0:
+            id = data['jogos'][0]['id_jogo']
+            game = self._get_game_by_id(id)
+            if game['nm_jogo'] == name:
+                return game
+            else:
+                raise ValueError(f'Error! game found is different. Name: {name}. Game found: {game["nm_jogo"]}')
+        else:
+            raise ValueError('Error! Game not found!')
+        
+    def _get_game_by_id(self, id : str) -> dict:
+        """Get board game by ID
+
+        Args:
+            id (str): Board game ID
+
+        Returns:
+            dict: ludopedia metadata containing game id
+        """
+        url = f'https://ludopedia.com.br/api/v1/jogos/{id}'
+        response = self._get_ludopedia_response(url)
+        return response.json()
+        
     def get_ludopedia_taxonomy(self, taxonomy_url : str) -> list:
         """Get the Ludopedia taxonomy for board games
 
