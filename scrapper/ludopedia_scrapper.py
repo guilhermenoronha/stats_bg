@@ -139,3 +139,22 @@ class LudopediaScrapper:
 
                 } for link in links
             ]
+        
+    def get_game_domain(self, game_url : str) -> str:
+        """Get game domain based on game url
+
+        Args:
+            game_url (str): game url on Ludopedia
+
+        Returns:
+            str: game domain id
+        """
+        options = Options()
+        options.add_argument('--headless')
+        with closing(Firefox(options=options)) as browser:
+            browser.get(game_url)
+            links = browser.find_elements(By.CLASS_NAME, 'text-primary')
+            for link in links:
+                metadata_link = link.get_attribute('href')
+                if 'dominio' in metadata_link:
+                    return os.path.basename(metadata_link)

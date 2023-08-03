@@ -140,15 +140,26 @@ def create_bg_category_table(conn : Connection, bgs : list[dict]) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
-def create_bg_domain_table(conn : Connection, bgs : list[dict]) -> None:
+
+def create_bg_domains_table(conn : Connection) -> None:
     """Creates board game domains table for each board game in collection
 
     Args:
         conn (Connection): database connection where the table will be created
         bgs (list[dict]): list of boardgames and its domains
     """
-    #TODO
-    pass
+    table_name = 'BG_DOMAINS'
+    ls = LudopediaScrapper()
+    cur = conn.execute('SELECT DISTINCT ID, URL FROM GAMES')
+    games_urls = cur.fetchall()
+    ids = [game[0] for game in games_urls]
+    domains = [ls.get_game_domain(url[1]) for url in games_urls]
+    df = pd.DataFrame({
+        'GAME_ID' : ids,
+        'DOMAIN_ID' : domains
+    })
+    df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
+    logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
 def create_bg_owners_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game owner table for each board game in collection
@@ -196,3 +207,7 @@ def create_board_games_table(conn : Connection, bgs : list[dict]) -> None:
     df['LST_DT_PLAYED'] = df['NAME'].map(games_played)
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
+
+if __name__ == '__main__':
+    conn = Connection('bg.db')
+    create_bg_domain_table(conn)
