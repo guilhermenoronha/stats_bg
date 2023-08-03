@@ -4,3 +4,5 @@
 *.env 
 # NOTEBOOK FILES
 *.ipynb
+__pycache__
+*.log
