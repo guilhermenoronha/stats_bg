@@ -1,9 +1,12 @@
 from scrapper.ludopedia_scrapper import LudopediaScrapper
+from scrapper.boardgamegeek_scrapper import get_BGG_game_weight, get_BGG_min_max_best_players, get_BGG_url_by_Ludopedia_search
 from sqlite3 import Connection
 from packages.sheets import get_url
+from packages.utils import timeit
 import itertools
 import logging
 import pandas as pd
+import os
 
 def _get_players_bgs_ids_from_sheet() -> list:
     """Get all bgs from players in bg_stats sheet
@@ -79,6 +82,7 @@ def _get_game_lst_dt_plyd_column() -> dict:
     matches.drop_duplicates(subset=['game'], keep='last', inplace=True)
     return dict(zip(matches['game'], matches['date']))
 
+@timeit
 def get_all_bgs(conn : Connection) -> list:
     """Get all the ludopedia metadata from every board game
 
@@ -86,7 +90,7 @@ def get_all_bgs(conn : Connection) -> list:
         conn (Connection): db connection to query users ludopedia_nicknames
 
     Returns:
-        list: _description_
+        list: all board game metadata
     """
     ls = LudopediaScrapper()
     bgs_ids = [id for id in _get_all_players_bgs(conn)]
@@ -98,6 +102,7 @@ def get_all_bgs(conn : Connection) -> list:
         bgs.append(game)
     return bgs
 
+@timeit
 def create_bg_mechanics_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game mechanics table for each board game in collection
 
@@ -112,6 +117,7 @@ def create_bg_mechanics_table(conn : Connection, bgs : list[dict]) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
+@timeit
 def create_bg_themes_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game themes table for each board game in collection
 
@@ -126,6 +132,7 @@ def create_bg_themes_table(conn : Connection, bgs : list[dict]) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
+@timeit
 def create_bg_category_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game categories table for each board game in collection
 
@@ -140,7 +147,7 @@ def create_bg_category_table(conn : Connection, bgs : list[dict]) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
-
+@timeit
 def create_bg_domains_table(conn : Connection) -> None:
     """Creates board game domains table for each board game in collection
 
@@ -150,7 +157,7 @@ def create_bg_domains_table(conn : Connection) -> None:
     """
     table_name = 'BG_DOMAINS'
     ls = LudopediaScrapper()
-    cur = conn.execute('SELECT DISTINCT ID, URL FROM GAMES')
+    cur = conn.execute('SELECT DISTINCT ID, LUDOPEDIA_URL FROM GAMES')
     games_urls = cur.fetchall()
     ids = [game[0] for game in games_urls]
     domains = [ls.get_game_domain(url[1]) for url in games_urls]
@@ -161,6 +168,7 @@ def create_bg_domains_table(conn : Connection) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
+@timeit
 def create_bg_owners_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game owner table for each board game in collection
 
@@ -176,6 +184,7 @@ def create_bg_owners_table(conn : Connection, bgs : list[dict]) -> None:
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
 
+@timeit
 def create_board_games_table(conn : Connection, bgs : list[dict]) -> None:
     """Creates board game table
 
@@ -188,7 +197,8 @@ def create_board_games_table(conn : Connection, bgs : list[dict]) -> None:
     id              = [bg['id_jogo'] for bg in ded_bg]
     name            = [bg['nm_jogo'] for bg in ded_bg]
     game_type       = [bg['tp_jogo'].upper() for bg in ded_bg]
-    url             = [bg['link'] for bg in ded_bg]
+    ludopedia_url   = [bg['link'] for bg in ded_bg]
+    bgg_url         = [get_BGG_url_by_Ludopedia_search(os.path.basename(url)) for url in ludopedia_url]
     min_age         = [bg['idade_minima'] for bg in ded_bg]
     playing_time    = [bg['vl_tempo_jogo'] for bg in ded_bg]
     min_players     = [bg['qt_jogadores_min'] for bg in ded_bg]
@@ -198,16 +208,15 @@ def create_board_games_table(conn : Connection, bgs : list[dict]) -> None:
         'ID' : id, 
         'NAME' : name,
         'GAME_TYPE' : game_type,
-        'URL' : url,
+        'LUDOPEDIA_URL' : ludopedia_url,
+        'BGG_URL' : bgg_url,
         'MIN_AGE': min_age,
         'PLAYING_TIME': playing_time,
         'MIN_PLAYERS': min_players,
         'MAX_PLAYERS': max_players
     })
     df['LST_DT_PLAYED'] = df['NAME'].map(games_played)
+    df['WEIGHT'] = df['BGG_URL'].map(get_BGG_game_weight, na_action='ignore')
+    df[['MIN_BEST_PLAYERS', 'MAX_BEST_PLAYERS']] = df['BGG_URL'].apply(get_BGG_min_max_best_players).to_list()
     df.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
     logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
-
-if __name__ == '__main__':
-    conn = Connection('bg.db')
-    create_bg_domain_table(conn)
