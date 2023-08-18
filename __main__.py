@@ -4,23 +4,11 @@ from packages.board_games import get_all_bgs, create_bg_category_table, create_b
                                  create_bg_owners_table, create_bg_themes_table, create_board_games_table
 from packages.attendances import create_attendances_table
 from packages.matches import create_matches_table
-from functools import wraps
-import time
 import logging
 import sqlite3
 
-def timeit(func):
-    @wraps(func)
-    def timeit_wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        total_time = end_time - start_time
-        logging.info(f'Function {func.__name__}{args} {kwargs} Took {total_time:.2f} seconds')
-        return result
-    return timeit_wrapper
 
-@timeit
+
 def main():
     logging.basicConfig(level=logging.INFO)
     conn = sqlite3.connect('bg.db')
