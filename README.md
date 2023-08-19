@@ -1,5 +1,5 @@
 [![](https://img.shields.io/static/v1?label=python&message=3.11&color=blue&logo=python)](https://www.python.org/downloads/release/python-3110/)
-[![](https://img.shields.io/static/v1?label=version&message=1.5&color=green)](https://img.shields.io/static/v1?label=version&message=1.5&color=green)
+[![](https://img.shields.io/static/v1?label=version&message=1.6&color=green)](https://img.shields.io/static/v1?label=version&message=1.6&color=green)
 
 # STATS FOR THE CLUBE DO BOARDGAME DA ZOEIRA
 
@@ -12,6 +12,7 @@ This repo is intended to collect and analyze data about the game sessions realiz
 - 1.3: Implemented new columns. See [#3](/../../issues/3).  
 - 1.4: Implemented Ludopedia scrapper. See [#4](/../../issues/4).
 - 1.5: Code refactoring and created taxonomy tables. See [#5](/../../issues/5) and [#6](/../../issues/6).
+- 1.6: Implemented Boardgame scrapper. See [#7] (/../../issues/7)
 
 ## OBJECTIVES
 
