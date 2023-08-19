@@ -1,10 +1,10 @@
-
 import logging
 import pandas as pd
 from scrapper.ludopedia_scrapper import LudopediaScrapper
 from pandas import Series
 from sqlite3 import Connection
 from packages.sheets import get_url
+from packages.utils import timeit
 
 def _create_player_id_column(nicknames : Series) -> Series:
     """Create ID column for Pandas Dataframe based on the column LUDOPEDIA_NICKNAME. 
@@ -37,6 +37,7 @@ def _create_players_lst_dt_att_column(names : Series) -> Series:
     lst_dt = {matches.columns[i]: matches.loc[matches.iloc[:, i].notnull(), 'date'].iloc[-1] for i in range(1, len(matches.columns))}
     return names.map(lst_dt)
 
+@timeit
 def create_players_table(conn : Connection):
     """Create players table. 
 
