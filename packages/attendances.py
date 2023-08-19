@@ -1,6 +1,7 @@
 from pandas import DataFrame
 from sqlite3 import Connection
 from packages.sheets import get_url
+from packages.utils import timeit
 import logging
 import pandas as pd
 
@@ -15,6 +16,7 @@ def _get_player_attendances(df : DataFrame, player : tuple) -> DataFrame:
     })
     return result.drop_duplicates(subset=['DATE', 'PLAYER_ID'], keep='first')
 
+@timeit
 def create_attendances_table(conn : Connection) -> None:
     table_name = 'ATTENDANCES'
     cur = conn.execute('SELECT NAME, ID FROM PLAYERS')
