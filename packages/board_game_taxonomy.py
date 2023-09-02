@@ -3,7 +3,7 @@ from sqlite3 import Connection
 import logging
 import pandas as pd
 
-def create_boardgame_metadata_table(conn : Connection, table_name : str, metadata_type : str):
+def create_boardgame_metadata_table(conn : Connection, table_name : str, metadata_type : str) -> None:
     """Creates a table with Ludopedia metadatas.
         The Ludopedia stores the following boardgames metadata:
 

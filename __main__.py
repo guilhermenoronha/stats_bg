@@ -4,6 +4,7 @@ from packages.board_games import get_all_bgs, create_bg_category_table, create_b
                                  create_bg_owners_table, create_bg_themes_table, create_board_games_table
 from packages.attendances import create_attendances_table
 from packages.matches import create_matches_table
+from packages.utils import save_table
 import logging
 import sqlite3
 
@@ -12,6 +13,7 @@ import sqlite3
 def main():
     logging.basicConfig(level=logging.INFO)
     conn = sqlite3.connect('bg.db')
+    mode = 'all'
     create_players_table(conn)
     bgs = get_all_bgs(conn)
     create_board_games_table(conn, bgs)
@@ -24,8 +26,12 @@ def main():
     create_bg_mechanics_table(conn, bgs)
     create_bg_themes_table(conn, bgs)
     create_bg_category_table(conn, bgs)
-    create_attendances_table(conn)
-    create_matches_table(conn)
+    if mode in ['all', 'attendances']:
+        cur = conn.execute('SELECT NAME, ID FROM PLAYERS')
+        players = cur.fetchall()
+        attendances = create_attendances_table(players)
+        save_table(conn, 'ATTENDANCES', attendances)
+        create_matches_table(conn)
 
 if __name__ == '__main__':
     main()
