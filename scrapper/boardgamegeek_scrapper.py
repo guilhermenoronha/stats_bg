@@ -78,4 +78,6 @@ def get_BGG_min_max_best_players(url : str) -> tuple[str]:
     min_pattern = r'{\"userplayers\":{\"best\":\[{\"min\":(\d+)'
     min = re.search(min_pattern, content)
     max = re.search(min_pattern + r',\"max\":(\d+)', content)
-    return min[min.lastindex], max[max.lastindex]
+    min = min[min.lastindex] if min is not None else None
+    max = max[max.lastindex] if max is not None else None
+    return min, max
