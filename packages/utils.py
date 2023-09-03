@@ -16,7 +16,16 @@ def timeit(func):
         return result
     return timeit_wrapper
 
-def save_table(df, schema, sql_string, table_name, mode='replace'):
+def save_table(df: DataFrame, schema: str, sql_string: str, table_name: str, mode='replace'):
+    """Saves a Dataframe into the database
+
+    Args:
+        df (DataFrame): table to be saved
+        schema (str): name of the schema on database
+        sql_string (str): string connection to database
+        table_name (str): name of the table to save the df
+        mode (str, optional): if the table will be replaced or appended. Defaults to 'replace'.
+    """
     engine = create_engine(sql_string)
     engine.execution_options(autocommit=True)
     with engine.connect() as conn:
