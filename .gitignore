@@ -6,3 +6,5 @@
 *.ipynb
 __pycache__
 *.log
+# VSCODE
+.vscode
