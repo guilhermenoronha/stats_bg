@@ -1,8 +1,6 @@
-import logging
 import pandas as pd
 from scrapper.ludopedia_scrapper import LudopediaScrapper
-from pandas import Series
-from sqlite3 import Connection
+from pandas import Series, DataFrame
 from packages.sheets import get_url
 from packages.utils import timeit
 
@@ -38,16 +36,14 @@ def _create_players_lst_dt_att_column(names : Series) -> Series:
     return names.map(lst_dt)
 
 @timeit
-def create_players_table(conn : Connection):
+def create_players_table() -> DataFrame:
     """Create players table. 
 
-    Args:
-        conn (Connection): Database connection where the table will be recorded 
+    Returns:
+        DataFrame: dataframe with date, player id, and is host columns.
     """
-    table_name = 'PLAYERS'
     url = get_url('players')
     players  = pd.read_csv(url)
     players['ID'] = _create_player_id_column(players['LUDOPEDIA_NICKNAME'])
     players['LAST_DATE_ATTENDED'] = _create_players_lst_dt_att_column(players['NAME'])
-    players.to_sql(name=table_name, con=conn, if_exists='replace', index=False)
-    logging.info(f'Table {table_name} was successfully created with {len(players)} rows.')
+    return players

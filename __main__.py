@@ -1,37 +1,57 @@
 from packages.players import create_players_table
 from packages.board_game_taxonomy import create_boardgame_metadata_table
-from packages.board_games import get_all_bgs, create_bg_category_table, create_bg_domains_table, create_bg_mechanics_table, \
-                                 create_bg_owners_table, create_bg_themes_table, create_board_games_table
 from packages.attendances import create_attendances_table
 from packages.matches import create_matches_table
 from packages.utils import save_table
+from packages.postgres_utils import get_games_data, get_players_data
+from decouple import config
+import packages.board_games as bg
 import logging
-import sqlite3
-
-
+import argparse
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    conn = sqlite3.connect('bg.db')
-    mode = 'all'
-    create_players_table(conn)
-    bgs = get_all_bgs(conn)
-    create_board_games_table(conn, bgs)
-    create_boardgame_metadata_table(conn, 'THEMES', 'themes')
-    create_boardgame_metadata_table(conn, 'CATEGORIES', 'categories')
-    create_boardgame_metadata_table(conn, 'DOMAINS', 'domains')
-    create_boardgame_metadata_table(conn, 'MECHANICS', 'mechanics')
-    create_bg_domains_table(conn)
-    create_bg_owners_table(conn, bgs)
-    create_bg_mechanics_table(conn, bgs)
-    create_bg_themes_table(conn, bgs)
-    create_bg_category_table(conn, bgs)
-    if mode in ['all', 'attendances']:
-        cur = conn.execute('SELECT NAME, ID FROM PLAYERS')
-        players = cur.fetchall()
-        attendances = create_attendances_table(players)
-        save_table(conn, 'ATTENDANCES', attendances)
-        create_matches_table(conn)
+    CLI = argparse.ArgumentParser()
+    CLI.add_argument('--mode', type=str, default='all')
+    args = CLI.parse_args()
+    user = config('PG_USER')
+    passwd = config('PG_PASSWD')
+    host = config('HOST')
+    port = config('PORT')
+    db = config('DB')
+    schema = config('SCHEMA')
+    sql_string = f'postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{db}'
+    mode = args.mode
+    if mode in ['players', 'all']:
+        save_table(create_players_table(), schema, sql_string, 'PLAYERS')
+    if mode in ['taxonomy', 'all']:
+        for taxonomy in ['themes', 'categories', 'domains', 'mechanics']:
+             save_table(create_boardgame_metadata_table(taxonomy), schema, 
+                        sql_string, taxonomy.upper())
+    if mode in ['boardgames', 'all']:
+        try:
+             bgs
+        except:
+             players = get_players_data(sql_string, db, schema, ['ID', 'LUDOPEDIA_NICKNAME'])
+             bgs = bg.get_all_bgs(players)
+        save_table(bg.create_board_games_table(bgs), schema, sql_string, 'GAMES')
+        save_table(bg.create_bg_owners_table(bgs), schema, sql_string, 'BG_OWNERS')
+    if mode in ['metadata' ,'all']:
+        try:
+             bgs
+        except:
+             players = get_players_data(sql_string, db, schema, ['ID', 'LUDOPEDIA_NICKNAME'])
+             bgs = bg.get_all_bgs(players)
+        games = get_games_data(sql_string, db, schema, ['ID', 'LUDOPEDIA_URL'])
+        save_table(bg.create_bg_domains_table(games), schema, sql_string, 'BG_DOMAINS')
+        save_table(bg.create_bg_themes_table(bgs), schema, sql_string, 'BG_THEMES')
+        save_table(bg.create_bg_categories_table(bgs), schema, sql_string, 'BG_CATEGORIES')
+        save_table(bg.create_bg_mechanics_table(bgs), schema, sql_string, 'BG_MECHANICS')
+    if mode in ['matches', 'all']:
+        players = get_players_data(sql_string, db, schema, ['ID', 'NAME'])
+        save_table(create_attendances_table(players), schema, sql_string, 'ATTENDANCES')
+        games = get_games_data(sql_string, db, schema, ['NAME', 'ID'])
+        save_table(create_matches_table(players, games), schema, sql_string, 'MATCHES')
 
 if __name__ == '__main__':
     main()
