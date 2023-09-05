@@ -1,0 +1,28 @@
+models:
+  - name: players
+    description: Table with player info
+    columns:
+      - name: id
+        description: Unique id of the player.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - unique
+          - not_null
+      - name: membership
+        description: If the player is a member of the club or a guest.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character       
+          - not_null
+          - accepted_values:
+              values: ['M', 'G']
+      - name: last_date_attended
+        description: The last date a player attended to a game session. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: date
+          - not_null

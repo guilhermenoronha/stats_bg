@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: stats_bg  
+    schema: bronze  
+    tables:
+      - name: ATTENDANCES
+      - name: BG_CATEGORIES
+      - name: BG_DOMAINS
+      - name: BG_MECHANICS
+      - name: BG_OWNERS
+      - name: BG_THEMES
+      - name: CATEGORIES
+      - name: DOMAINS
+      - name: GAMES
+      - name: MATCHES
+      - name: MECHANICS
+      - name: PLAYERS
+      - name: THEMES

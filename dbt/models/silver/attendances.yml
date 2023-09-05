@@ -1,0 +1,25 @@
+models:
+  - name: attendances
+    description: Table with every game session date and who attended to them.
+    columns:
+      - name: date
+        description: Date of the session.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: date
+          - not_null
+      - name: player_id
+        description: Player ID who attended to a game session.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer       
+          - not_null
+      - name: is_host
+        description: If the player was the host or not.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: boolean
+          - not_null
