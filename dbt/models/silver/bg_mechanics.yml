@@ -1,0 +1,18 @@
+models:
+  - name: bg_mechanics
+    description: Contains every mechanic for every board game.
+    columns:
+      - name: game_id
+        description: Game id.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+      - name: mechanic_id
+        description: Mechanic id.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer       
+          - not_null

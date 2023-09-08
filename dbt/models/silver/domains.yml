@@ -1,0 +1,28 @@
+models:
+  - name: domains
+    description: "Every Ludopedia domain"
+    columns:
+      - name: id
+        description: "Ludopedia domain id"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+          - unique
+      - name: name
+        description: "Ludopedia domain name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null
+          - unique
+      - name: url
+        description: "Ludopedia URL with domain description"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null  
+          - unique      

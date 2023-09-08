@@ -1,0 +1,8 @@
+WITH BG_OWNERS AS (
+    SELECT
+        CAST("USER_ID" AS INTEGER) AS USER_ID,
+        CAST("GAME_ID" AS INTEGER) AS GAME_ID
+    FROM {{source('bronze', 'BG_OWNERS')}}    
+)
+
+SELECT * FROM BG_OWNERS
