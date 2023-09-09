@@ -1,0 +1,18 @@
+models:
+  - name: games_per_player
+    description: "Every game per player"
+    columns:
+      - name: player
+        description: "Player name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null
+      - name: game
+        description: "Game name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null        
