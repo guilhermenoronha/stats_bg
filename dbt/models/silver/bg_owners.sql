@@ -1,0 +1,8 @@
+WITH BG_OWNERS AS (
+    SELECT
+        "USER_ID"::INTEGER AS USER_ID,
+        "GAME_ID"::INTEGER AS GAME_ID
+    FROM {{source('bronze', 'BG_OWNERS')}}    
+)
+
+SELECT * FROM BG_OWNERS

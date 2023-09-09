@@ -1,0 +1,8 @@
+WITH BG_THEMES AS (
+    SELECT
+        "GAME_ID"::INTEGER AS GAME_ID,
+        "THEME_ID"::INTEGER AS THEME_ID
+    FROM {{ source('bronze', 'BG_THEMES') }}    
+)
+
+SELECT * FROM BG_THEMES

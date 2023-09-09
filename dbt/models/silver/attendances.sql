@@ -1,0 +1,9 @@
+WITH ATTENDANCES AS (
+    SELECT
+        TO_DATE("DATE", '%d%mm%YY') AS DATE,
+        "PLAYER_ID"::INT AS PLAYER_ID,
+        "IS_HOST"::BOOLEAN AS IS_HOST
+    FROM {{ source('bronze', 'ATTENDANCES') }}
+)
+
+SELECT * FROM ATTENDANCES

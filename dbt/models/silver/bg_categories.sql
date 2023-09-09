@@ -1,0 +1,8 @@
+WITH BG_CATEGORIES AS (
+    SELECT
+        "GAME_ID"::INTEGER AS GAME_ID,
+        "CATEGORY_ID"::INTEGER AS CATEGORY_ID
+    FROM {{ source('bronze', 'BG_CATEGORIES') }}        
+)
+
+SELECT * FROM BG_CATEGORIES

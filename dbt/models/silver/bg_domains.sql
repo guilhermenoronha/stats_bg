@@ -1,0 +1,8 @@
+WITH BG_DOMAINS AS(
+    SELECT
+        "GAME_ID"::INTEGER AS GAME_ID,
+        "DOMAIN_ID"::INTEGER AS DOMAIN_ID
+    FROM {{ source('bronze', 'BG_DOMAINS') }}    
+)
+
+SELECT * FROM BG_DOMAINS
