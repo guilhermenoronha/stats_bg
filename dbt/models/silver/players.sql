@@ -5,6 +5,13 @@ WITH PLAYERS AS(
         "ID"::INTEGER AS ID,
         TO_DATE("LAST_DATE_ATTENDED", '%dd%mm%YY') AS LAST_DATE_ATTENDED
     FROM {{source('bronze', 'PLAYERS')}}
+),
+
+FINAL AS (
+    SELECT
+        P.*,
+        (CURRENT_DATE - P."last_date_attended")::INTEGER AS DAYS_SINCE_LST_ATT
+    FROM PLAYERS P
 )
 
-SELECT * FROM PLAYERS
+SELECT * FROM FINAL
