@@ -1,6 +1,6 @@
 models:
   - name: games
-    description: ""
+    description: "Contains every game on players' collection."
     columns:
       - name: id
         description: "Unique game id."
