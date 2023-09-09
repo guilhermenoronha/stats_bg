@@ -1,8 +1,8 @@
 WITH ATTENDANCES AS (
     SELECT
         TO_DATE("DATE", '%d%mm%YY') AS DATE,
-        CAST("PLAYER_ID" AS INT) AS PLAYER_ID,
-        CAST("IS_HOST" AS BOOLEAN) AS IS_HOST
+        "PLAYER_ID"::INT AS PLAYER_ID,
+        "IS_HOST"::BOOLEAN AS IS_HOST
     FROM {{ source('bronze', 'ATTENDANCES') }}
 )
 

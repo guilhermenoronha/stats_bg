@@ -1,8 +1,8 @@
 WITH DOMAINS AS (
     SELECT
-        CAST("ID" AS INTEGER) AS ID,
-        CAST("NAME" AS VARCHAR) AS NAME,
-        CAST("URL" AS VARCHAR) AS URL
+        "ID"::INTEGER AS ID,
+        "NAME"::VARCHAR AS NAME,
+        "URL"::VARCHAR AS URL
     FROM {{ source('bronze', 'DOMAINS') }}        
 )
 

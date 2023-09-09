@@ -1,7 +1,7 @@
 WITH BG_DOMAINS AS(
     SELECT
-        CAST("GAME_ID" AS INTEGER) AS GAME_ID,
-        CAST("DOMAIN_ID" AS INTEGER) AS DOMAIN_ID
+        "GAME_ID"::INTEGER AS GAME_ID,
+        "DOMAIN_ID"::INTEGER AS DOMAIN_ID
     FROM {{ source('bronze', 'BG_DOMAINS') }}    
 )
 
