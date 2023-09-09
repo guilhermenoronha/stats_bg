@@ -34,3 +34,11 @@ models:
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: date
           - not_null
+      - name: days_since_lst_att
+        description: Days since the player showd last time 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - dbt_utils.accepted_range:
+              min_value: 0         

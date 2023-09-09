@@ -2,8 +2,7 @@ from packages.players import create_players_table
 from packages.board_game_taxonomy import create_boardgame_metadata_table
 from packages.attendances import create_attendances_table
 from packages.matches import create_matches_table
-from packages.utils import save_table
-from packages.postgres_utils import get_games_data, get_players_data
+from packages.postgres_utils import get_games_data, get_players_data, save_table
 from decouple import config
 import packages.board_games as bg
 import logging
