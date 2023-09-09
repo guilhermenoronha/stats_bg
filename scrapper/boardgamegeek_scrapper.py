@@ -2,6 +2,8 @@ import requests
 import logging
 import re
 import time
+import pandas as pd
+from packages.sheets import get_url
 
 def _get_content(url : str) -> str:
     """Get decoded content from an url
@@ -27,6 +29,23 @@ def _get_content(url : str) -> str:
         raise ValueError(f'Page not found! Status code: {response.status_code}')
     else:
         return response.content.decode('utf-8')
+    
+def _get_game_url_from_sheet_aid(search : str) -> str:
+    """This function use a sheet as an aid to get BGG urls where the search found nothing.
+
+    Args:
+        search (str): string to search the game
+
+    Returns:
+        str: game url
+    """
+    try:
+        url = get_url('ludopedia-bgg')
+        df = pd.read_csv(url)
+        idx = df.loc[df['search'] == search].index[0]
+        return df.at[idx, 'bgg_url']
+    except Exception:
+        return None
 
 def get_BGG_url_by_Ludopedia_search(search : str) -> str:
     """Try to find the game url based on a search string
@@ -44,8 +63,12 @@ def get_BGG_url_by_Ludopedia_search(search : str) -> str:
     content = _get_content(url)
     res = re.findall(r'/boardgame.*/\d+/', content)
     if len(res) == 0:
-        logging.warning(f'Warning! Search {search} returned nothing!')
-        return None
+        url = _get_game_url_from_sheet_aid(search)
+        if url is None:
+            logging.warning(f'Warning! Search {search} returned nothing!')
+            return None
+        else:
+            return url
     else:
         id = re.search(r'\d+', res[0]).group()
         return f'https://boardgamegeek.com/boardgame/{id}/{search}'
