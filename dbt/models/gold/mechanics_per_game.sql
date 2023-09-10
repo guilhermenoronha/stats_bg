@@ -4,7 +4,7 @@ with
     games as (select * from {{ ref('games') }}),
 
 final AS (
-    select 
+    select distinct
         m."name" as mechanic,
         g."name" as game
     from mechanics m 
