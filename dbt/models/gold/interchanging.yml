@@ -1,0 +1,28 @@
+models:
+  - name: interchanging
+    description: "Describe the players, hosts, and games interchanging between sessions"
+    columns:
+      - name: date
+        description: "When the session occurred."
+
+      - name: interchanging_players
+        description: "How many players changed since the last session."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+      - name: interchanging_games
+        description: "How many games changed since the last session."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+      - name: interchanging_hosts
+        description: "If the host changed since the last session."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: boolean
+          - not_null                  
