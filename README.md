@@ -1,5 +1,4 @@
 [![](https://img.shields.io/static/v1?label=python&message=3.11&color=blue&logo=python)](https://www.python.org/downloads/release/python-3110/)
-[![](https://img.shields.io/static/v1?label=version&message=2.0&color=green)](https://img.shields.io/static/v1?label=version&message=1.6&color=green)
 
 # STATS FOR THE CLUBE DO BOARDGAME DA ZOEIRA
 
