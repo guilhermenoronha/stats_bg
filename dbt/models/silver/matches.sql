@@ -1,11 +1,18 @@
-WITH MATCHES AS (
+WITH 
+
+MATCHES AS (SELECT * FROM {{ source('bronze', 'MATCHES') }}),
+GAMES AS (SELECT * FROM {{ source('bronze', 'GAMES') }}),
+
+FINAL AS (
     SELECT
-        TO_DATE("DATE", '%dd%mm%YY') AS DATE,
-        "PLAYER_ID"::INTEGER AS PLAYER_ID,
-        "GAME_ID"::INTEGER AS GAME_ID,
-        "SCORE"::INTEGER AS SCORE,
-        "ID"::INTEGER AS ID 
-    FROM {{ source('bronze', 'MATCHES') }}
+        TO_DATE(M."DATE", '%dd%mm%YY') AS DATE,
+        M."PLAYER_ID"::INTEGER AS PLAYER_ID,
+        M."GAME_ID"::INTEGER AS GAME_ID,
+        M."SCORE"::INTEGER AS SCORE,
+        M."ID"::INTEGER AS ID,
+        G."NAME"::VARCHAR AS GAME_NAME
+    FROM MATCHES M
+    LEFT JOIN GAMES G ON G."ID" = M."GAME_ID"
 )
 
-SELECT * FROM MATCHES
+SELECT * FROM FINAL

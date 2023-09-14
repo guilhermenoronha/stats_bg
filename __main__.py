@@ -21,8 +21,6 @@ def main():
     schema = config('SCHEMA')
     sql_string = f'postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{db}'
     mode = args.mode
-    if mode in ['players', 'all']:
-        save_table(create_players_table(), schema, sql_string, 'PLAYERS')
     if mode in ['taxonomy', 'all']:
         for taxonomy in ['themes', 'categories', 'domains', 'mechanics']:
              save_table(create_boardgame_metadata_table(taxonomy), schema, 
@@ -47,6 +45,7 @@ def main():
         save_table(bg.create_bg_categories_table(bgs), schema, sql_string, 'BG_CATEGORIES')
         save_table(bg.create_bg_mechanics_table(bgs), schema, sql_string, 'BG_MECHANICS')
     if mode in ['matches', 'all']:
+        save_table(create_players_table(), schema, sql_string, 'PLAYERS')
         players = get_players_data(sql_string, db, schema, ['ID', 'NAME'])
         save_table(create_attendances_table(players), schema, sql_string, 'ATTENDANCES')
         games = get_games_data(sql_string, db, schema, ['NAME', 'ID'])
