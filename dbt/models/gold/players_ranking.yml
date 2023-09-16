@@ -1,0 +1,31 @@
+models:
+  - name: players_ranking
+    description: "Contains the ranking of players based on game scores"
+    columns:
+      - name: name
+        description: "Player's name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null
+      - name: winners_rank
+        description: "Ranking pwhich considers only the wins. Calculated by sum(games won)/sum(game played)"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100   
+      - name: weighted_rank
+        description: '{{ doc("weighted_rank") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100            
