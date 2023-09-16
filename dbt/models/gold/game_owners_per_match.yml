@@ -1,0 +1,29 @@
+models:
+  - name: game_owners_per_match
+    description: "Groups total of games and matches every player played its own games."
+    columns:
+      - name: name
+        description: "Player's name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying    
+          - not_null           
+      - name: total_matches
+        description: "Total of matches the player played of its own games"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer   
+          - not_null       
+          - dbt_utils.accepted_range:
+              min_value: 0             
+      - name: total_games
+        description: "Different games the player played of its own games"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer    
+          - not_null        
+          - dbt_utils.accepted_range:
+              min_value: 0          
