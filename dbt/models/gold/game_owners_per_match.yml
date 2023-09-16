@@ -1,6 +1,6 @@
 models:
   - name: game_owners_per_match
-    description: "Groups total of games and matches every player played its own games."
+    description: "Games and matches per owner. Used in sommelier of the year award."
     columns:
       - name: name
         description: "Player's name"
@@ -9,21 +9,17 @@ models:
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: character varying    
           - not_null           
-      - name: total_matches
+      - name: match_id
         description: "Total of matches the player played of its own games"
         tests:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: integer   
-          - not_null       
-          - dbt_utils.accepted_range:
-              min_value: 0             
-      - name: total_games
+          - not_null            
+      - name: game_name
         description: "Different games the player played of its own games"
         tests:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer    
+              column_type: character varying    
           - not_null        
-          - dbt_utils.accepted_range:
-              min_value: 0          

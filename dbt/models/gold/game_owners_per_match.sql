@@ -8,13 +8,12 @@ games as (select * from {{ ref('games') }}),
 final as (
     select 
         p."name", 
-        count(distinct m."id")::integer as total_matches, 
-        count(distinct bo."game_id")::integer as total_games
+        m."id" as match_id, 
+        g.name as game_name
     from players p
     left join bg_owners bo on bo."user_id" = p."id"
     join matches m on m."game_id" = bo."game_id"
     left join games g on g."id"  = bo."game_id"
-    group by 1
 )
 
 select * from final
