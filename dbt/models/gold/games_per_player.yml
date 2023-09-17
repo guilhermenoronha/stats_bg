@@ -1,6 +1,6 @@
 models:
   - name: games_per_player
-    description: "Every game per player"
+    description: "Every game owned per player"
     columns:
       - name: player
         description: "Player name"
