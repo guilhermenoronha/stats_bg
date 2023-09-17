@@ -1,0 +1,28 @@
+models:
+  - name: taxonomies_per_match
+    description: "Groups categories, mechanics, and themes for every game played"
+    columns:
+      - name: name
+        description: "Taxonomy name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying    
+          - not_null
+      - name: total_played
+        description: "Amount of the games played with this taxonomy"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - dbt_utils.accepted_range:
+              min_value: 0
+          - not_null
+      - name: taxonomy_type
+        description: "If the taxonomy comes from categories, mechanics, or mechanics"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character
+          - accepted_values:
+              values: ['T', 'M', 'C']
