@@ -60,8 +60,8 @@ only_winners_rank as (
 weighted_player_score as (
 	select 
         p.name, 
-        g.weight * (a.players_qty - m.rank + 1) as weighted_player_score,
-        g.weight * (a.players_qty) as max_score
+        g.weight * a.players_qty * (1/m.rank::float) as weighted_player_score,
+        g.weight * a.players_qty as max_score
 	from players p
 	left join matches m on p.id = m.player_id
 	join competitive_games g on g.id = m.game_id 
@@ -88,5 +88,3 @@ final as (
 )
 
 select * from final
-
-
