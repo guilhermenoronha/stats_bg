@@ -10,7 +10,6 @@ WITH
         from games g 
         left join bg_owners bo on g.id = bo.game_id
         left join players p on p.id = bo.user_id
-        where g.game_type = 'B'
  )
 
  SELECT * FROM final

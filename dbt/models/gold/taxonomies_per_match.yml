@@ -19,7 +19,7 @@ models:
               min_value: 0
           - not_null
       - name: taxonomy_type
-        description: "If the taxonomy comes from categories, mechanics, or mechanics"
+        description: "If the taxonomy comes from categories, mechanics, or themes"
         tests:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
