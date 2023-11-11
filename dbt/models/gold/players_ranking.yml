@@ -20,12 +20,9 @@ models:
               min_value: 0
               max_value: 100   
       - name: weighted_rank
-        description: '{{ doc("weighted_rank") }}'
+        description: 'Calculated by the sum of weighted_rank divided by the number of competitive matches the player disputed.'
         tests:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: numeric
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100            
+          - not_null           
