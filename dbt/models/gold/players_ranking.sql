@@ -61,8 +61,7 @@ weighted_player_score as (
 	select 
         p.name, 
         g.weight * a.players_qty * (1/m.rank::float) as weighted_player_score,
-        g.weight * a.players_qty as max_score,
-        m.weighted_rank,
+        m.weighted_rank * a.players_qty as weighted_rank,
         m.id
 	from players p
 	left join matches m on p.id = m.player_id
