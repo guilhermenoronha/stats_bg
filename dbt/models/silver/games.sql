@@ -12,7 +12,7 @@ WITH GAMES AS (
         "LUDOPEDIA_URL"::VARCHAR AS LUDOPEDIA_URL,
         "BGG_URL"::VARCHAR AS BGG_URL,
         "MIN_AGE"::INTEGER AS MIN_AGE,
-        "PLAYING_TIME"::INTEGER AS PLAYING_TIME,
+        "PLAYING_TIME"::INTEGER AS PLAYING_TIME_MIN,
         "MIN_PLAYERS"::INTEGER AS MIN_PLAYERS,
         "MAX_PLAYERS"::INTEGER AS MAX_PLAYERS,
         TO_DATE("LST_DT_PLAYED", '%dd%mm%YY') AS LST_DT_PLAYED,
@@ -25,7 +25,7 @@ WITH GAMES AS (
 FINAL as (
     SELECT 
         G.*,
-        (G."playing_time" * 2)::INTEGER AS PLAYING_TIME_REAL,
+        (G."playing_time_min" * 2)::INTEGER AS PLAYING_TIME_REAL_MIN,
         (CURRENT_DATE - G."lst_dt_played")::INTEGER AS DAYS_SINCE_LST_PLAYED,
         ((G."min_best_players" + G."max_best_players")/2)::INTEGER AS BEST_PLAYERS_QTY
     FROM GAMES G
