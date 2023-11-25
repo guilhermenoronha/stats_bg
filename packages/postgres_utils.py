@@ -80,7 +80,10 @@ def truncate_table(sql_string: str, schema: str, table_name: str) -> None:
         schema (str): schema name
         table_name (str): table name
     """
-    engine = create_engine(sql_string)
-    with engine.connect() as conn:
-        conn.execute(text(f'TRUNCATE TABLE {schema}."{table_name}"'))
-        conn.commit()
+    try:
+        engine = create_engine(sql_string)
+        with engine.connect() as conn:
+            conn.execute(text(f'TRUNCATE TABLE {schema}."{table_name}"'))
+            conn.commit()
+    except:
+        logging.warning(f"Table {table_name} wasn't truncated because it doesn't exist.")

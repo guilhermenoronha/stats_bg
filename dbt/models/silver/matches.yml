@@ -51,4 +51,32 @@ models:
               column_type: integer   
           - not_null    
           - dbt_utils.accepted_range:
-              min_value: 0                                             
+              min_value: 0   
+      - name: game_weight
+        description: "Measure to understand how complex the game is. Ranges from 0 to 5."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 5                                                           
+      - name: game_playing_time_real_min
+        description: "Adjusted playing time in minutes."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer       
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0     
+      - name: weighted_rank
+        description: '{{ doc("weighted_rank_matches") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0                    

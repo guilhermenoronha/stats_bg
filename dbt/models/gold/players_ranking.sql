@@ -1,6 +1,6 @@
 with
 
-matches as (select * from {{ ref('matches') }}),
+matches as (select *, (rank() over (partition by id order by score asc)) as inverse_rank from {{ ref('matches') }}),
 games as (select * from {{ ref('games') }}),
 bg_mechanics as (select * from {{ ref('bg_mechanics') }}),
 players as (select * from {{ ref('players') }}),
@@ -15,7 +15,7 @@ max_score_per_match as(
         max(m.score) as winner_score
     from matches m
     left join games g on m.game_id = g.id 
-    group by 1,2,3
+    group by m.id, m.game_name, g.weight
 ),
 
 cooperative_games as (
@@ -41,27 +41,57 @@ competitive_matches as (
 	from matches m
 	join competitive_games cg on m.game_id = cg.id
 	left join players p on p.id = m.player_id 
-	group by 1
+	group by p.id
 ),
 
-only_winners_rank as (
-	select 
-        p.name, 
-        round(cast(count(score) as numeric)/max(total_matches) * 100, 2) as winners_rank
+base_rank as (
+	select
+		p.name,
+		m.id,
+		m.rank,
+		m.inverse_rank,
+		m.score,
+		cp.total_matches
 	from players p
 	left join matches m on p.id = m.player_id
 	join competitive_games g on g.id = m.game_id 
 	left join competitive_matches cp on cp.id = p.id
-	join max_score_per_match a on m.id = a.id and m.rank = 1
 	where cp.total_matches >= 10
-	group by 1
+),
+
+winners_rank as (
+	select 
+        br.name, 
+        round(cast(count(score) as numeric)/max(total_matches) * 100, 2) as winner_rank	
+	from base_rank br
+	join max_score_per_match mspm on br.id = mspm.id and br.rank = 1
+	group by br.name	
+),
+
+losers_rank as (
+	select 
+        br.name, 
+        round(cast(count(score) as numeric)/max(total_matches) * 100, 2) as loser_rank	
+	from base_rank br
+	join max_score_per_match mspm on br.id = mspm.id and br.inverse_rank = 1
+	group by br.name	
+),
+
+vices_rank as (
+	select 
+        br.name, 
+        round(cast(count(score) as numeric)/max(total_matches) * 100, 2) as vice_rank
+	from base_rank br
+	join max_score_per_match mspm on br.id = mspm.id and br.rank = 2
+	group by br.name	
 ),
 
 weighted_player_score as (
 	select 
         p.name, 
-        g.weight * (a.players_qty - m.rank + 1) as weighted_player_score,
-        g.weight * (a.players_qty) as max_score
+        g.weight * a.players_qty * (1/m.rank::float) as weighted_player_score,
+        m.weighted_rank * a.players_qty as weighted_rank,
+        m.id
 	from players p
 	left join matches m on p.id = m.player_id
 	join competitive_games g on g.id = m.game_id 
@@ -73,20 +103,22 @@ weighted_player_score as (
 weighted_rank as (
 	select 
 		name,
-		round(sum(weighted_player_score)::numeric/sum(max_score)::numeric * 100, 2) as weighted_rank
+		(sum(weighted_rank)/count(id))::numeric as weighted_rank
 	from weighted_player_score mw
-	group by 1	
+	group by name
 ),
 
 final as (
 	select 
 		wr.name,
-		winners_rank,
+		winner_rank,
+		loser_rank,
+		vice_rank,
 		weighted_rank
 	from weighted_rank wr
-	join only_winners_rank owr on wr.name = owr.name
+	join winners_rank owr on wr.name = owr.name
+	join losers_rank lr on wr.name = lr.name
+	join vices_rank vr on wr.name = vr.name 
 )
 
 select * from final
-
-
