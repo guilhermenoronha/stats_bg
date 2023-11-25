@@ -9,8 +9,28 @@ models:
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: character varying
           - not_null
-      - name: winners_rank
-        description: "Ranking pwhich considers only the wins. Calculated by sum(games won)/sum(game played)"
+      - name: winner_rank
+        description: "Ranking which considers only the wins. Calculated by sum(games won)/sum(game played)"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100  
+      - name: loser_rank
+        description: "Ranking the last player(s) on every match. Calculated by sum(games in last ranked)/sum(game played)"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100    
+      - name: vice_rank
+        description: "Ranking how much a player came in second place. Calculated by sum(games in second place)/sum(game played)"
         tests:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
