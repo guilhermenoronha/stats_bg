@@ -1,0 +1,22 @@
+models:
+  - name: players_game_per_session
+    description: "KPI to see how much (in %) a player plays its own games in each session"
+    columns:
+      - name: name
+        description: "Player name"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null
+          - unique
+      - name: session_with_players_game_in_percentage
+        description: "How much a player play its own games in each session. Calculated by session with at least one player game divided by every session they attended."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100          
