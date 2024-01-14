@@ -1,8 +1,8 @@
 from scrapper.ludopedia_scrapper import LudopediaScrapper
 import scrapper.boardgamegeek_scrapper as bgg
 from pandas import DataFrame
-from packages.sheets import get_url
-from packages.utils import timeit
+from stats_bg.sheets import get_url
+from stats_bg.utils import timeit
 import itertools
 import pandas as pd
 import os

@@ -3,7 +3,7 @@ import logging
 import re
 import time
 import pandas as pd
-from packages.sheets import get_url
+from stats_bg.sheets import get_url
 
 def _get_content(url : str) -> str:
     """Get decoded content from an url

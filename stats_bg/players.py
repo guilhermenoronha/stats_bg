@@ -1,8 +1,8 @@
 import pandas as pd
 from scrapper.ludopedia_scrapper import LudopediaScrapper
 from pandas import Series, DataFrame
-from packages.sheets import get_url
-from packages.utils import timeit
+from stats_bg.sheets import get_url
+from stats_bg.utils import timeit
 
 def _create_player_id_column(nicknames : Series) -> Series:
     """Create ID column for Pandas Dataframe based on the column LUDOPEDIA_NICKNAME. 

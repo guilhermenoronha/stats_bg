@@ -1,5 +1,5 @@
-from packages.sheets import get_url
-from packages.utils import timeit
+from stats_bg.sheets import get_url
+from stats_bg.utils import timeit
 from pandas import DataFrame
 import pandas as pd
 

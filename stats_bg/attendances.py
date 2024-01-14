@@ -1,6 +1,6 @@
 from pandas import DataFrame
-from packages.sheets import get_url
-from packages.utils import timeit
+from stats_bg.sheets import get_url
+from stats_bg.utils import timeit
 import pandas as pd
 
 def _get_player_attendances(df : DataFrame, player : DataFrame) -> DataFrame:

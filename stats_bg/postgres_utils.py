@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
-from packages.players import create_players_table
+from stats_bg.players import create_players_table
 import pandas as pd
-import packages.board_games as bg
+import stats_bg.board_games as bg
 import logging
 from pandas import DataFrame
 
