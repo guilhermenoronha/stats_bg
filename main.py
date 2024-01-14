@@ -20,7 +20,7 @@ def main():
     db = config('DB')
     schema = config('SCHEMA')
     sql_string = f'postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{db}'
-    mode = args.mode
+    mode = "matches"#args.mode
     if mode in ['players', 'all']:
         save_table(create_players_table(), schema, sql_string, 'PLAYERS')
     if mode in ['taxonomy', 'all']:
