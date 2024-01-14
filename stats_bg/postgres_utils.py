@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine, text
-from packages.players import create_players_table
+from stats_bg.players import create_players_table
 import pandas as pd
-import packages.board_games as bg
+import stats_bg.board_games as bg
 import logging
 from pandas import DataFrame
+
 
 def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataFrame:
     """Get data from games table.
@@ -19,7 +20,7 @@ def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataF
     """
     engine = create_engine(sql_string)
     engine.execution_options(autocommit=True)
-    columns = ', '.join(f'"{column}"' for column in columns)
+    columns = ", ".join(f'"{column}"' for column in columns)
     qry = f'SELECT DISTINCT {columns} FROM {db}.{schema}."GAMES"'
     with engine.connect() as conn:
         try:
@@ -28,11 +29,16 @@ def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataF
             try:
                 bgs
             except:
-                players = get_players_data(sql_string, db, schema, ['ID', 'LUDOPEDIA_NICKNAME'])
-                bgs = bg.get_all_bgs(players)            
-                save_table(bg.create_board_games_table(bgs), schema, sql_string, 'GAMES')
+                players = get_players_data(
+                    sql_string, db, schema, ["ID", "LUDOPEDIA_NICKNAME"]
+                )
+                bgs = bg.get_all_bgs(players)
+                save_table(
+                    bg.create_board_games_table(bgs), schema, sql_string, "GAMES"
+                )
                 return pd.read_sql(qry, conn)
-    
+
+
 def get_players_data(sql_string: str, db: str, schema: str, columns: str) -> DataFrame:
     """Get data from players' table.
 
@@ -44,19 +50,22 @@ def get_players_data(sql_string: str, db: str, schema: str, columns: str) -> Dat
 
     Returns:
         DataFrame: table
-    """    
+    """
     engine = create_engine(sql_string)
     engine.execution_options(autocommit=True)
-    columns = ', '.join(f'"{column}"' for column in columns)
+    columns = ", ".join(f'"{column}"' for column in columns)
     qry = f'SELECT {columns} FROM {db}.{schema}."PLAYERS"'
     with engine.connect() as conn:
-        try:     
+        try:
             return pd.read_sql(qry, conn)
         except:
-            save_table(create_players_table, schema, sql_string, 'PLAYERS')
+            save_table(create_players_table, schema, sql_string, "PLAYERS")
             return pd.read_sql(qry, conn)
-        
-def save_table(df: DataFrame, schema: str, sql_string: str, table_name: str, mode='append') -> None:
+
+
+def save_table(
+    df: DataFrame, schema: str, sql_string: str, table_name: str, mode="append"
+) -> None:
     """Saves a Dataframe into the database
 
     Args:
@@ -70,8 +79,11 @@ def save_table(df: DataFrame, schema: str, sql_string: str, table_name: str, mod
     engine = create_engine(sql_string)
     with engine.connect() as conn:
         df.to_sql(name=table_name, con=conn, if_exists=mode, schema=schema, index=False)
-        logging.info(f'Table {table_name} was successfully created with {len(df)} rows.')
-        
+        logging.info(
+            f"Table {table_name} was successfully created with {len(df)} rows."
+        )
+
+
 def truncate_table(sql_string: str, schema: str, table_name: str) -> None:
     """truncate a table to be appended.
 
@@ -86,4 +98,6 @@ def truncate_table(sql_string: str, schema: str, table_name: str) -> None:
             conn.execute(text(f'TRUNCATE TABLE {schema}."{table_name}"'))
             conn.commit()
     except:
-        logging.warning(f"Table {table_name} wasn't truncated because it doesn't exist.")
+        logging.warning(
+            f"Table {table_name} wasn't truncated because it doesn't exist."
+        )
