@@ -1,9 +1,12 @@
+{{ config(materialized='incremental', unique_key=['execution_date', 'name']) }}
+
 with
 
 matches as (select *, (rank() over (partition by id order by score asc)) as inverse_rank from {{ ref('matches') }}),
 games as (select * from {{ ref('games') }}),
 bg_mechanics as (select * from {{ ref('bg_mechanics') }}),
 players as (select * from {{ ref('players') }}),
+games_per_player as (select player, cast(count(game) as numeric) as total_games from {{ ref('games_per_player') }} group by player),
 
 
 max_score_per_match as(
@@ -109,16 +112,20 @@ weighted_rank as (
 ),
 
 final as (
-	select 
-		wr.name,
-		winner_rank,
-		loser_rank,
-		vice_rank,
-		weighted_rank
-	from weighted_rank wr
-	join winners_rank owr on wr.name = owr.name
-	join losers_rank lr on wr.name = lr.name
-	join vices_rank vr on wr.name = vr.name 
+	select distinct
+		p.name,
+		coalesce(winner_rank, 0) as winner_rank,
+		coalesce(loser_rank, 0) as loser_rank,
+		coalesce(vice_rank, 0) as vice_rank,
+		coalesce(weighted_rank, 0) as weighted_rank,
+		coalesce(total_games, 0) as total_games,
+		date(now()) as execution_date
+	from players p
+	left join weighted_rank wr on p.name = wr.name
+	left join winners_rank owr on p.name = owr.name
+	left join losers_rank lr on p.name = lr.name
+	left join vices_rank vr on p.name = vr.name
+	left join games_per_player gpp on wr.name = gpp.player
 )
 
 select * from final

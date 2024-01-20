@@ -1,6 +1,6 @@
 models:
-  - name: players_ranking
-    description: "Contains the ranking of players based on game scores"
+  - name: players_metrics
+    description: "Contain individual metrics for each player"
     columns:
       - name: name
         description: "Player's name"
@@ -9,7 +9,6 @@ models:
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: character varying
           - not_null
-          - unique
       - name: winner_rank
         description: "Ranking which considers only the wins. Calculated by sum(games won)/sum(game played)"
         tests:
@@ -46,4 +45,18 @@ models:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: numeric
-          - not_null           
+          - not_null
+      - name: total_games
+        description: 'Amount of games owned by each player. Count base and expansion games.'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: numeric
+          - not_null      
+      - name: execution_date
+        description: "Date when the row was processed."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: date
+          - not_null                
