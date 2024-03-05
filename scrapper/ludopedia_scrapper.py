@@ -1,5 +1,7 @@
 import os
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from decouple import config
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
@@ -26,7 +28,11 @@ class LudopediaScrapper:
         Returns:
             requests.Response: the response of the page
         """
-        response = requests.get(url=url, headers=self.headers)
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=0.5)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        response = session.get(url=url, headers=self.headers)
         if response.status_code == 200:
             return response
         else:
