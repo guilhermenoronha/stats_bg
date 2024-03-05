@@ -16,6 +16,34 @@ The main objectives from the data analysis from the sessions is to keep the club
 - TODO   
 
 ## HOW TO USE IT?
-- TODO
 
-All the tables are saved into a SQLite database to be used later into a DataViz tool or to be queried in any SQL Tool.
+### Prerequistes
+- Have an account on Ludopedia and create and New App on https://ludopedia.com.br/aplicativos to get the access_key.
+- Have PostgreSQL installed locally.
+
+### Basic usage
+- Clone this repo
+- Create a database named stats_bg, and a schema named bronze.
+- Create .env file with the following variables:
+    - PG_USER=your_postgres_username
+    - PG_PASSWD=your_postgres_password
+    - HOST=postgres_host
+    - PORT=postgres_port
+    - DB=postgres_database
+    - SCHEMA=bronze
+    - SHEET_ID=your_google_sheet_id
+    - ACCESS_KEY=your_ludopedia_acess_token(usuário)
+- Open a terminal a type _poetry init_ to create a virtual env.
+- Yet on terminal, type _python main.py_ (Also you may use the arg --mode with the following options):
+    - players: process players table.
+    - taxonomy: process themes, categories, domains, and mechanics tables.
+    - boardgames: process games and bg_owners table.
+    - metadata: process bg_domains, bg_themes, bg_categories, and bg_mechanics tables.
+    - matches: process attendances and matches table.
+- Export the following variables to the system to be used by DBT:
+    - SET POSTGRES_USER=your_user
+    - SET POSTGRES_PASSWD=your_password
+- run _cd dbt_ command
+- run _dbt deps_ to install DBT dependencies.
+- run _dbt build_ command to build all models.
+- Plug the dashboard on power_bi folder in the database and voilà.
