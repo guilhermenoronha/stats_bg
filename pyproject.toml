@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "stats-bg"
+version = "2.4.0"
+description = "End to end project to collect and analyze data from my board game club."
+authors = ["Guilherme Noronha <guilhermenoronha2001@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "2.0.2"
+python-decouple = "3.8"
+selenium = "4.10.0"
+dbt-postgres = "1.6.1"
+sqlalchemy = "2.0.28"
+pip-system-certs = "^4.0"
+python-certifi-win32 = "1.6.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
