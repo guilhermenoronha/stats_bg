@@ -1,4 +1,0 @@
-pandas==2.0.2
-python-decouple==3.8
-selenium==4.10.0
-dbt-postgres==1.6.1
