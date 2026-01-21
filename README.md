@@ -3,10 +3,10 @@
 
 # STATS FOR THE CLUBE DO BOARDGAME DA ZOEIRA
 
-This repo is intended to collect and analyze data about the game sessions realized into the Clube do Boardgame da Zoeira. The project has two main data sources: data manually annotated into the Google Sheets with sessions, games played, scores, and so on, and; the board game metadata scrapped from [Ludopedia](https://ludopedia.com.br) and [BoardGameGeek](https://boardgamegeek.com/). All the raw data is wrangled to convert the data into a structured one to be queried using SQL. Data is stored in a database using PostgreSQL. Finally, DBT is used to filter, aggregate, join, and test the data to create value to be consumed on Power BI. The following figure shows the architecture of the project.
+This repo is intended to collect and analyze data about the game sessions realized into the Clube do Boardgame da Zoeira. The project has two main data sources: data manually annotated into the Google Sheets with sessions, games played, scores, and so on, and; the board game metadata scrapped from [Ludopedia](https://ludopedia.com.br) and [BoardGameGeek](https://boardgamegeek.com/). All the raw data is wrangled to convert the data into a structured one to be queried using SQL. Data is stored in a database using PostgreSQL. Finally, DBT is used to filter, aggregate, join, and test the data to create value to be consumed on Looker Studio. The following figure shows the architecture of the project.
 
 <p align="center" width="100%">
-    <img src="https://github.com/guilhermenoronha/stats_bg/assets/2208226/17379177-1311-4b5c-a5b1-a4b4c6cd3d98"> 
+    <img src="https://github.com/user-attachments/assets/50d2498d-85d5-4df4-b592-3ae7d9faf679"> 
 </p>
 
 ## OBJECTIVES
@@ -46,4 +46,3 @@ The main objectives from the data analysis from the sessions is to keep the club
 - run _cd dbt_ command
 - run _dbt deps_ to install DBT dependencies.
 - run _dbt build_ command to build all models.
-- Plug the dashboard on power_bi folder in the database and voilà.
