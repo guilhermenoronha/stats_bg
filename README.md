@@ -43,6 +43,7 @@ The main objectives from the data analysis from the sessions is to keep the club
 - Export the following variables to the system to be used by DBT:
     - SET POSTGRES_USER=your_user
     - SET POSTGRES_PASSWD=your_password
+    - SET POSTGRES_HOST=your_host
 - run _cd dbt_ command
 - run _dbt deps_ to install DBT dependencies.
 - run _dbt build_ command to build all models.
