@@ -33,6 +33,7 @@ STEP_1 AS (
 FINAL AS (
     SELECT
         S1.*,
+        (game_playing_time_real_min::float/60)*'1 HOUR'::interval as game_playing_time_real_hr,
         case when rank = max(rank) over(partition by id) then 0
         when rank = min(rank) over(partition by id) then 1 * game_weight
         else
@@ -42,3 +43,4 @@ FINAL AS (
 )
 
 SELECT * FROM FINAL
+where GAME_NAME is not null
