@@ -6,7 +6,8 @@ matches as (select * from {{ ref('matches') }}),
 final as (
     select
         p.name,
-        m.game_name
+        m.game_name,
+        m.date
     from players p
     left join matches m on p.id = m.player_id
 )
