@@ -19,4 +19,8 @@ final as (
     group by date
 )
 
-select avg(time_played_per_session_hr) as time_played_per_session_hr from final
+select 
+    date_trunc('year', date)::DATE as date,
+    avg(time_played_per_session_hr) as time_played_per_session_hr 
+from final
+group by date_trunc('year', date)::DATE
