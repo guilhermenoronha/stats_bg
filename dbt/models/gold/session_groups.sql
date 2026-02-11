@@ -1,15 +1,39 @@
 WITH 
 
 PLAYERS AS (SELECT * FROM {{ ref('players') }} ORDER BY name),
-ATTENDANCES AS (SELECT * FROM {{ ref('attendances') }}),
+MATCHES AS (SELECT * FROM {{ ref('matches') }}),
 
-NAMES_GROUPED AS(
+only_members_matches AS (
 	SELECT 
-        STRING_AGG(P."name", ', ')::VARCHAR AS GROUP_NAME, 
-        A."date"::DATE
-	FROM PLAYERS P
-	LEFT JOIN ATTENDANCES A ON P."id" = A."player_id"
-	GROUP BY A."date"
+		 A."date"
+		,A.id
+		,A.player_id
+	FROM matches A
+	WHERE A.player_id in ( SELECT id FROM PLAYERS WHERE membership = 'M' )
+),
+
+only_guests_matches AS (
+	SELECT 
+		 A."date"
+		,A.id
+		,A.player_id
+	FROM matches A
+	WHERE A.player_id in ( SELECT id FROM PLAYERS WHERE membership = 'G' )
+),
+
+session_groups as (
+	select
+		 STRING_AGG(p.name, ', ' ORDER BY p.name) as group_name
+		,m.date
+		,m.id
+	from only_members_matches m
+	left join players p on m.player_id = p.id
+	where m.id not in (select id from only_guests_matches)
+	group by m.date, m.id
+	
 )
 
-SELECT * FROM NAMES_GROUPED
+select distinct
+	 group_name::varchar
+	,date::date
+from session_groups
