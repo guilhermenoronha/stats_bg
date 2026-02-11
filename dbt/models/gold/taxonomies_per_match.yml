@@ -26,3 +26,7 @@ models:
               column_type: character
           - accepted_values:
               values: ['T', 'M', 'C']
+      - name: date
+        description: "Date when the game taxonomy was registered."
+        tests:
+          - not_null
