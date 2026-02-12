@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import ChunkedEncodingError
 import logging
 import re
 import time
@@ -18,7 +19,12 @@ def _get_content(url: str) -> str:
     Returns:
         str: return content from the url decoded in utf-8
     """
-    response = requests.get(url)
+    for _ in range(5):
+        try:
+            response = requests.get(url)
+            break
+        except ChunkedEncodingError:
+            time.sleep(5)
     requests_num = 0
     while response.status_code == 429:  # avoiding requests limits
         time.sleep(5)

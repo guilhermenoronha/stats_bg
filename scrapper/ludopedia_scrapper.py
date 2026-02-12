@@ -2,11 +2,13 @@ import os
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import logging
 from decouple import config
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from contextlib import closing
+from time import sleep
 
 
 class LudopediaScrapper:
@@ -33,6 +35,8 @@ class LudopediaScrapper:
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
         response = session.get(url=url, headers=self.headers)
+        sleep(5)
+        response = requests.get(url=url, headers=self.headers)
         if response.status_code == 200:
             return response
         else:
@@ -76,11 +80,14 @@ class LudopediaScrapper:
             game_id (str): board game ID on Ludopedia
 
         Returns:
-            dict: _description_
+            dict: Metadata found for this ID. Else return None.
         """
-        url = f"https://ludopedia.com.br/api/v1/jogos/{game_id}"
-        response = self._get_ludopedia_response(url)
-        return response.json()
+        if game_id == -1:  # Game not registered on Ludopedia
+            return None
+        else:
+            url = f"https://ludopedia.com.br/api/v1/jogos/{game_id}"
+            response = self._get_ludopedia_response(url)
+            return response.json()
 
     def get_game_by_name(self, name: str) -> dict:
         """Get board game by name
@@ -97,7 +104,7 @@ class LudopediaScrapper:
         url = f'https://ludopedia.com.br/api/v1/jogos?search={name.replace(" ", "%20")}'
         response = self._get_ludopedia_response(url)
         data = response.json()
-        if len(data) != 0:
+        if data.get("total") != 0:
             id = data["jogos"][0]["id_jogo"]
             game = self._get_game_by_id(id)
             if game["nm_jogo"] == name:
@@ -107,7 +114,8 @@ class LudopediaScrapper:
                     f'Error! game found is different. Name: {name}. Game found: {game["nm_jogo"]}'
                 )
         else:
-            raise ValueError("Error! Game not found!")
+            logging.warning(f"Error! Game {name} wasn't found!")
+            return {"id_jogo": -1, "nm_jogo": name}
 
     def _get_game_by_id(self, id: str) -> dict:
         """Get board game by ID

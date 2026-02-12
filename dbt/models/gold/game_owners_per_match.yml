@@ -22,4 +22,12 @@ models:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: character varying    
-          - not_null        
+          - not_null
+      - name: sommelier_rank
+        description: >
+          The Key Performance Indicator (KPI) for 'Sommelier of the Year' is designed to reward game variety. 
+          It is calculated as: KPI = Σ (1 / n) where *n* is the total number of times a specific game has been played.
+          This formula applies a decreasing marginal weight to each repeated play of the same game, 
+          thereby favoring a diverse portfolio of games played over a high volume of plays for a single game.
+        tests:
+          - not_null

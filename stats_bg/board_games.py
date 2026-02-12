@@ -95,8 +95,9 @@ def get_all_bgs(players: DataFrame) -> list:
     bgs = []
     for id in games_ids:
         game = ls.get_bg_metadata(id.get("id_jogo"))
-        game["id_dono"] = id.get("id_dono")
-        bgs.append(game)
+        if game is not None:
+            game["id_dono"] = id.get("id_dono")
+            bgs.append(game)
     return bgs
 
 
