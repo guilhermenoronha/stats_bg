@@ -1,0 +1,120 @@
+version: 2
+
+models:
+  - name: boardgames_data
+    description: >
+      Table with consolidated data about the boardgames. Each row is a different boardgame. 
+      This table contains different metadata about the games such as recommended age, time of playing, etc.
+      The data presented in this table is useful for consulting the whole group collection and filter based on the intended characteristcs.  
+    columns:
+      - name: name
+        description: "Name of the game."
+
+      - name: game_type
+        description: "If the game is Base or Expansion."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character
+          - accepted_values:
+              values: ['B', 'E']
+          - not_null
+
+      - name: ludopedia_url
+        description: "Game url on ludopedia."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: character varying
+          - not_null
+          - unique
+
+      - name: min_age
+        description: "Min age recommended to play the game."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: min_players
+        description: "Minimum accepted quantity of players."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0              
+      
+      - name: max_players
+        description: "Maximum accepted quantity of players."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: "min_players"  
+
+      - name: lst_dt_played
+        description: "Last date the game was played."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: date
+
+      - name: weight
+        description: "Measure to understand how complex the game is. Ranges from 0 to 5."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 5
+
+      - name: min_best_players
+        description: "Minimum recommended quantity of players."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer    
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: max_best_players
+        description: "Maximum accepted quantity of players."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer    
+          - dbt_utils.accepted_range:
+              min_value: "min_best_players"
+
+      - name: playing_time_real_min
+        description: "Adjusted playing time in minutes."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: integer       
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0    
+
+      - name: categories
+        description: "Set of categories the boardgame have."
+
+      - name: domains
+        description: "Set of domains the boardgame have."
+
+      - name: mechanics
+        description: "Set of mechanics the boardgame have."
+
+      - name: themes
+        description: "Set of themes the boardgame have."
+
+      - name: owners
+        description: "One or more owners the boardgame may have."
