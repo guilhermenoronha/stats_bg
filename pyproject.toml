@@ -13,6 +13,7 @@ selenium = "4.10.0"
 dbt-postgres = "1.6.1"
 numpy = "1.26.4"
 sqlalchemy = "^2.0.35"
+pytest = "^9.0.2"
 
 
 [build-system]
