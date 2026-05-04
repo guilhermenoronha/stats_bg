@@ -1,5 +1,6 @@
 [![](https://img.shields.io/static/v1?label=python&message=3.11&color=blue&logo=python)](https://www.python.org/downloads/release/python-3110/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/guilhermenoronha/stats_bg/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/guilhermenoronha/stats_bg/actions/workflows/tests.yml)
 
 # STATS FOR THE CLUBE DO BOARDGAME DA ZOEIRA
 

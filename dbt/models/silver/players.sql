@@ -1,17 +1,28 @@
-WITH PLAYERS AS(
-    SELECT
-        "NAME"::VARCHAR AS NAME,
-        "MEMBERSHIP"::CHAR AS MEMBERSHIP,
-        "ID"::INTEGER AS ID,
-        TO_DATE("LAST_DATE_ATTENDED", '%dd%mm%YY') AS LAST_DATE_ATTENDED
-    FROM {{source('bronze', 'PLAYERS')}}
-),
+WITH 
 
-FINAL AS (
+    PLAYERS AS (SELECT * FROM {{source('bronze', 'PLAYERS')}}),
+    
+    ATTENDANCES AS (
+        SELECT 
+            *
+            FROM (
+                SELECT
+                    *,
+                    ROW_NUMBER() OVER(PARTITION BY PLAYER_ID ORDER BY DATE DESC) as rn
+                FROM {{ ref("attendances") }}
+            )
+            WHERE rn = 1
+    ),
+
+FINAL AS(
     SELECT
-        P.*,
-        (CURRENT_DATE - P."last_date_attended")::INTEGER AS DAYS_SINCE_LST_ATT
-    FROM PLAYERS P
+        p."NAME"::VARCHAR AS NAME,
+        p."LUDOPEDIA_NICKNAME"::VARCHAR AS LUDOPEDIA_NICKNAME,
+        p."MEMBERSHIP"::CHAR AS MEMBERSHIP,
+        p."ID"::INTEGER AS ID,
+        a."date"::DATE AS LAST_ATTENDED_DATE
+    FROM PLAYERS p
+    LEFT JOIN ATTENDANCES a on p."ID" = a.player_id
 )
 
 SELECT * FROM FINAL

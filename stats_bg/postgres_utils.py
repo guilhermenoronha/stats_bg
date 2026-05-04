@@ -64,21 +64,26 @@ def get_players_data(sql_string: str, db: str, schema: str, columns: str) -> Dat
 
 
 def save_table(
-    df: DataFrame, schema: str, sql_string: str, table_name: str, mode="append"
+    df: DataFrame, schema: str, sql_string: str, table_name: str, mode="replace"
 ) -> None:
-    """Saves a Dataframe into the database
+    """Saves a Dataframe into the database. 
+       On replace mode the function will perform a truncate then append a new dataframe.
+       This is necessary to avoid cascade drop on the database. 
 
     Args:
         df (DataFrame): table to be saved
         schema (str): name of the schema on database
         sql_string (str): string connection to database
         table_name (str): name of the table to save the df
-        mode (str, optional): if the table will be replaced or appended. Defaults to 'append'.
+        mode (str, optional): accept values replace or append. Defaults to 'replace'.
     """
-    truncate_table(sql_string, schema, table_name)
+    if mode.lower() not in ("append", "replace"):
+        raise ValueError("Mode must be 'append' or 'replace'!")
+    if mode == "replace":
+        truncate_table(sql_string, schema, table_name)
     engine = create_engine(sql_string)
     with engine.connect() as conn:
-        df.to_sql(name=table_name, con=conn, if_exists=mode, schema=schema, index=False)
+        df.to_sql(name=table_name, con=conn, if_exists="append", schema=schema, index=False)
         logging.info(
             f"Table {table_name} was successfully created with {len(df)} rows."
         )

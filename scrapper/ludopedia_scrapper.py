@@ -1,5 +1,5 @@
 import os
-import requests
+from requests import Response, RequestException, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import logging
@@ -8,7 +8,6 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from contextlib import closing
-from time import sleep
 
 
 class LudopediaScrapper:
@@ -18,31 +17,41 @@ class LudopediaScrapper:
         """
         self.headers = {"Authorization": f'Bearer {config("ACCESS_KEY")}'}
 
-    def _get_ludopedia_response(self, url: str) -> requests.Response:
+    def _get_ludopedia_response(self, url: str) -> Response:
         """Method to request the Ludopedia url response. Its append the url with the headers added on constructor
 
         Args:
             url (str): the Ludopedia url to be requested
 
         Raises:
-            requests.RequestException: raises error if the response is not ok (Code 200)
+            RequestException: raises error if the response is not ok (Code 200)
 
         Returns:
-            requests.Response: the response of the page
+            Response: the response of the page
         """
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
+        session = Session()
+
+        retry = Retry(
+            total=5,
+            connect=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+        )
+
         adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
+
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+
         response = session.get(url=url, headers=self.headers)
-        sleep(5)
-        response = requests.get(url=url, headers=self.headers)
+
         if response.status_code == 200:
             return response
-        else:
-            raise requests.RequestException(
-                "An error occurred when requesting url. Check if the url or the access_token is correct."
-            )
+
+        raise RequestException(
+            "An error occurred when requesting url. Check if the url or the access_token is correct."
+        )
 
     def get_user_id(self, username: str) -> str:
         """Get the user id based on username
