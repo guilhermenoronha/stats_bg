@@ -7,8 +7,7 @@ from stats_bg.utils import timeit
 
 def _create_player_id_column(nicknames: Series) -> Series:
     """Create ID column for Pandas Dataframe based on the column LUDOPEDIA_NICKNAME.
-    If a player has a nickname on Ludopedia, this function retrieves the correspondent ID,
-    otherwise the player receives an autoincremental value.
+    If a player has a nickname on Ludopedia, this function retrieves the correspondent ID.
 
     Args:
         nicknames (Series): Pandas Series with players Data
