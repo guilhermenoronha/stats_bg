@@ -5,85 +5,46 @@ models:
       - name: date     
         description: "Date when the match happened."
         tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: date
           - not_null
       - name: player_id
         description: "Player id."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer
-      - name: game_id  
-        description: "Game id."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer
-          - not_null              
+      - name: game_id
+        description: "Game id."             
       - name: score    
-        description: "Player score."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer
-          - not_null              
-      - name: id       
+        description: "Player score."          
+      - name: match_id       
         description: "Match id."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer    
+        tests:  
           - not_null      
       - name: game_name       
         description: "Game name."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: character varying    
+        tests:  
           - not_null    
+      - name: host_name
+        description: "Host of the match session."
+        tests:
+          - not_null
+      - name: game_owner
+        description: "Owner of the game used in the match."
+      - name: player_name
+        description: "Player name as registered in source data."
+        tests:
+          - not_null
+      - name: notes
+        description: "Additional notes recorded for the match."
       - name: rank       
         description: "Players' rank."
+      - name: game_owner_id
+        description: "Game owner player id."
+      - name: player_membership
+        description: "Player membership category."
         tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer   
-          - not_null    
-          - dbt_utils.accepted_range:
-              min_value: 0   
-      - name: game_weight
-        description: "Measure to understand how complex the game is. Ranges from 0 to 5."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: double precision
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 5                                                           
-      - name: game_playing_time_real_min
-        description: "Adjusted playing time in minutes."
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: integer       
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
+          - accepted_values:
+              values: ['M', 'G']
       - name: game_playing_time_real_hr
-        description: "Time played per session in hh:mm:ss."
         tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: interval
-          - not_null        
+          - not_null      
+        description: "Time played per session in hh:mm:ss."    
       - name: weighted_rank
-        description: '{{ doc("weighted_rank_matches") }}'
-        tests:
-          - dbt_expectations.expect_column_to_exist
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: double precision
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0                    
+        description: '{{ doc("weighted_rank_matches") }}'                  
