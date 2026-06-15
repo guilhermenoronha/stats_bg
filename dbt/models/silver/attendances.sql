@@ -1,16 +1,14 @@
-WITH 
+with
+    matches as (select * from {{ ref('matches') }})
 
-ATTENDANCES AS (SELECT * FROM {{ source('bronze', 'ATTENDANCES') }}),
-PLAYERS AS (SELECT * FROM {{ source('bronze', 'PLAYERS') }}),
+	,attendances as (
+		select distinct 
+			 m."date"
+			,m.player_id 
+			,m.player_name 
+			,m.player_membership
+			,m.host_name = m.player_name as is_host
+		from matches m
+	)
 
-FINAL AS (
-    SELECT
-        TO_DATE(A."DATE", '%dd%mm%YY') AS DATE,
-        A."PLAYER_ID"::INT AS PLAYER_ID,
-        P."NAME"::VARCHAR AS PLAYER_NAME,
-        A."IS_HOST"::BOOLEAN AS IS_HOST
-    FROM ATTENDANCES A
-    LEFT JOIN PLAYERS P ON A."PLAYER_ID" = P."ID"
-)
-
-SELECT * FROM FINAL
+select * from attendances
