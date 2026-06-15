@@ -1,6 +1,5 @@
 from stats_bg.players import create_players_table
 from stats_bg.board_game_taxonomy import create_boardgame_metadata_table
-from stats_bg.attendances import create_attendances_table
 from stats_bg.matches import create_matches_table
 from stats_bg.postgres_utils import get_games_data, get_players_data, save_table
 from decouple import config
@@ -60,10 +59,8 @@ def main():
             bg.create_bg_mechanics_table(bgs), schema, sql_string, "BG_MECHANICS"
         )
     if mode in ["matches", "all"]:
-        players = get_players_data(sql_string, db, schema, ["ID", "NAME"])
-        save_table(create_attendances_table(players), schema, sql_string, "ATTENDANCES")
-        games = get_games_data(sql_string, db, schema, ["NAME", "ID"])
-        save_table(create_matches_table(players, games), schema, sql_string, "MATCHES")
+        matches_table = create_matches_table()
+        save_table(matches_table, schema, sql_string, "MATCHES")
 
 
 if __name__ == "__main__":
