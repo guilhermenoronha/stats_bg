@@ -6,14 +6,16 @@ import logging
 from pandas import DataFrame
 
 
-def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataFrame:
+def get_games_data(
+    sql_string: str, db: str, schema: str, columns: list[str]
+) -> DataFrame:
     """Get data from games table.
 
     Args:
         sql_string (str): string to connect onto postgres
         db (str): database name
         schema (str): schema name
-        columns (str): columns to retrieve
+        columns (list[str]): columns to retrieve
 
     Returns:
         DataFrame: table
@@ -29,8 +31,8 @@ def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataF
             try:
                 bgs
             except:
-                players = get_players_data(
-                    sql_string, db, schema, ["ID", "LUDOPEDIA_NICKNAME"]
+                players = get_table_data(
+                    sql_string, db, schema, "PLAYERS", ["ID", "LUDOPEDIA_NICKNAME"]
                 )
                 bgs = bg.get_all_bgs(players)
                 save_table(
@@ -39,14 +41,17 @@ def get_games_data(sql_string: str, db: str, schema: str, columns: str) -> DataF
                 return pd.read_sql(qry, conn)
 
 
-def get_players_data(sql_string: str, db: str, schema: str, columns: str) -> DataFrame:
-    """Get data from players' table.
+def get_table_data(
+    sql_string: str, db: str, schema: str, table: str, columns: list[str]
+) -> DataFrame:
+    """Get data from a database table.
 
     Args:
         sql_string (str): string to connect onto postgres
         db (str): database name
         schema (str): schema name
-        columns (str): columns to retrieve
+        table (str): table name
+        columns (list[str]): columns to retrieve
 
     Returns:
         DataFrame: table
@@ -54,13 +59,14 @@ def get_players_data(sql_string: str, db: str, schema: str, columns: str) -> Dat
     engine = create_engine(sql_string)
     engine.execution_options(autocommit=True)
     columns = ", ".join(f'"{column}"' for column in columns)
-    qry = f'SELECT {columns} FROM {db}.{schema}."PLAYERS"'
+    qry = f'SELECT {columns} FROM {db}.{schema}."{table}"'
     with engine.connect() as conn:
         try:
             return pd.read_sql(qry, conn)
-        except:
-            save_table(create_players_table, schema, sql_string, "PLAYERS")
-            return pd.read_sql(qry, conn)
+        except Exception as exc:
+            raise RuntimeError(
+                f'Failed to read table {db}.{schema}."{table}" with query: {qry}'
+            ) from exc
 
 
 def save_table(

@@ -1,9 +1,10 @@
 import pandas as pd
+import pytest
 from unittest.mock import MagicMock, patch
 
 from stats_bg.postgres_utils import (
     get_games_data,
-    get_players_data,
+    get_table_data,
     save_table,
     truncate_table,
 )
@@ -18,38 +19,40 @@ def _mock_engine_with_connection():
 
 @patch("stats_bg.postgres_utils.create_engine")
 @patch("stats_bg.postgres_utils.pd.read_sql")
-def test_get_players_data_returns_query_result(mock_read_sql, mock_create_engine):
+def test_get_table_data_returns_query_result(mock_read_sql, mock_create_engine):
     engine, conn = _mock_engine_with_connection()
     mock_create_engine.return_value = engine
-    expected = pd.DataFrame({"ID": [1], "LUDOPEDIA_NICKNAME": ["nick"]})
+    expected = pd.DataFrame({"ID": [1], "NAME": ["Catan"]})
     mock_read_sql.return_value = expected
 
-    result = get_players_data("conn", "DB", "public", ["ID", "LUDOPEDIA_NICKNAME"])
+    result = get_table_data(
+        "conn", "DB", "public", "games", ["ID", "NAME"]
+    )
 
     assert result.equals(expected)
     assert mock_read_sql.call_count == 1
     qry = mock_read_sql.call_args[0][0]
-    assert qry == 'SELECT "ID", "LUDOPEDIA_NICKNAME" FROM DB.public."PLAYERS"'
+    assert qry == 'SELECT "ID", "NAME" FROM DB.public."games"'
     assert mock_read_sql.call_args[0][1] is conn
 
 
-@patch("stats_bg.postgres_utils.create_engine")
-@patch("stats_bg.postgres_utils.save_table")
 @patch("stats_bg.postgres_utils.pd.read_sql")
-def test_get_players_data_creates_table_on_read_failure(
-    mock_read_sql, mock_save_table, mock_create_engine
+@patch("stats_bg.postgres_utils.create_engine")
+def test_get_table_data_raises_runtime_error_on_read_failure(
+    mock_create_engine, mock_read_sql
 ):
     engine, conn = _mock_engine_with_connection()
     mock_create_engine.return_value = engine
-    expected = pd.DataFrame({"ID": [1], "LUDOPEDIA_NICKNAME": ["nick"]})
-    mock_read_sql.side_effect = [Exception("missing table"), expected]
+    mock_read_sql.side_effect = Exception("missing table")
 
-    result = get_players_data("conn", "DB", "public", ["ID", "LUDOPEDIA_NICKNAME"])
+    with pytest.raises(RuntimeError) as exc_info:
+        get_table_data(
+            "conn", "DB", "public", "players", ["ID", "LUDOPEDIA_NICKNAME"]
+        )
 
-    assert result.equals(expected)
-    mock_save_table.assert_called_once()
-    args = mock_save_table.call_args[0]
-    assert args[1:] == ("public", "conn", "PLAYERS")
+    assert 'Failed to read table DB.public."players"' in str(exc_info.value)
+    assert isinstance(exc_info.value.__cause__, Exception)
+    assert str(exc_info.value.__cause__) == "missing table"
 
 
 @patch("stats_bg.postgres_utils.create_engine")
@@ -72,11 +75,11 @@ def test_get_games_data_returns_query_result(mock_read_sql, mock_create_engine):
 @patch("stats_bg.postgres_utils.save_table")
 @patch("stats_bg.postgres_utils.bg.create_board_games_table")
 @patch("stats_bg.postgres_utils.bg.get_all_bgs")
-@patch("stats_bg.postgres_utils.get_players_data")
+@patch("stats_bg.postgres_utils.get_table_data")
 @patch("stats_bg.postgres_utils.pd.read_sql")
 def test_get_games_data_bootstraps_games_table_on_read_failure(
     mock_read_sql,
-    mock_get_players_data,
+    mock_get_table_data,
     mock_get_all_bgs,
     mock_create_board_games_table,
     mock_save_table,
@@ -91,15 +94,15 @@ def test_get_games_data_bootstraps_games_table_on_read_failure(
     expected = pd.DataFrame({"ID": [10], "NAME": ["Catan"]})
 
     mock_read_sql.side_effect = [Exception("missing table"), expected]
-    mock_get_players_data.return_value = players
+    mock_get_table_data.return_value = players
     mock_get_all_bgs.return_value = bgs_raw
     mock_create_board_games_table.return_value = bgs_df
 
     result = get_games_data("conn", "DB", "public", ["ID", "NAME"])
 
     assert result.equals(expected)
-    mock_get_players_data.assert_called_once_with(
-        "conn", "DB", "public", ["ID", "LUDOPEDIA_NICKNAME"]
+    mock_get_table_data.assert_called_once_with(
+        "conn", "DB", "public", "PLAYERS", ["ID", "LUDOPEDIA_NICKNAME"]
     )
     mock_get_all_bgs.assert_called_once_with(players)
     mock_create_board_games_table.assert_called_once_with(bgs_raw)

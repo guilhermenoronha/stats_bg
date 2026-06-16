@@ -1,7 +1,7 @@
 from stats_bg.players import create_players_table
 from stats_bg.board_game_taxonomy import create_boardgame_metadata_table
 from stats_bg.matches import create_matches_table
-from stats_bg.postgres_utils import get_games_data, get_players_data, save_table
+from stats_bg.postgres_utils import get_games_data, get_table_data, save_table
 from decouple import config
 import stats_bg.board_games as bg
 import logging
@@ -35,8 +35,8 @@ def main():
         try:
             bgs
         except:
-            players = get_players_data(
-                sql_string, db, schema, ["ID", "LUDOPEDIA_NICKNAME"]
+            players = get_table_data(
+                sql_string, db, schema, "PLAYERS", ["ID", "LUDOPEDIA_NICKNAME"]
             )
             bgs = bg.get_all_bgs(players)
         save_table(bg.create_board_games_table(bgs), schema, sql_string, "GAMES")
@@ -45,8 +45,8 @@ def main():
         try:
             bgs
         except:
-            players = get_players_data(
-                sql_string, db, schema, ["ID", "LUDOPEDIA_NICKNAME"]
+            players = get_table_data(
+                sql_string, db, schema, "PLAYERS", ["ID", "LUDOPEDIA_NICKNAME"]
             )
             bgs = bg.get_all_bgs(players)
         games = get_games_data(sql_string, db, schema, ["ID", "LUDOPEDIA_URL"])
