@@ -13,3 +13,4 @@ def get_url(sheet_name: str) -> str:
     """
     sheet_id = config("SHEET_ID")
     return f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+

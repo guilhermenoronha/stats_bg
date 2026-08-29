@@ -22,7 +22,7 @@ def test_get_ludopedia_response_success(mock_session):
     mock_session_instance.get.assert_called_once_with(
         url="http://fake-url",
         headers=scraper.headers,
-        timeout=scraper.REQUEST_TIMEOUT_SECONDS,
+        timeout=scraper.request_timeout_seconds,
     )
 
 @patch("scrapper.ludopedia_scrapper.Session")
