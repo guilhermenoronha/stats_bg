@@ -4,6 +4,7 @@ import logging
 import re
 import time
 import pandas as pd
+import cloudscraper
 from stats_bg.sheets import get_url
 
 
@@ -21,7 +22,8 @@ def _get_content(url: str) -> str:
     """
     for _ in range(5):
         try:
-            response = requests.get(url)
+            scraper = cloudscraper.create_scraper()
+            response = scraper.get(url)
             break
         except ChunkedEncodingError:
             time.sleep(5)

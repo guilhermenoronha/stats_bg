@@ -1,5 +1,6 @@
 from scrapper.ludopedia_scrapper import LudopediaScrapper
 import scrapper.boardgamegeek_scrapper as bgg
+import stats_bg.matches as matches
 from pandas import DataFrame
 from stats_bg.sheets import get_url
 from stats_bg.utils import timeit
@@ -23,7 +24,7 @@ def _get_players_bgs_ids_from_sheet() -> list:
     return [{"id_dono": user_ids[i], "id_jogo": bg_ids[i]} for i in range(len(bg_ids))]
 
 
-def _get_players_bgs_ids_from_ludopedia(players: DataFrame) -> list:
+def get_players_bgs_ids_from_ludopedia(players: DataFrame) -> list:
     """Get all bgs from players who have ludopedia id
 
     Args:
@@ -34,7 +35,6 @@ def _get_players_bgs_ids_from_ludopedia(players: DataFrame) -> list:
     """
     ls = LudopediaScrapper()
     ids = players.query("LUDOPEDIA_NICKNAME.notnull()")["ID"].to_list()
-    ls = LudopediaScrapper()
     collection = []
     for id in ids:
         games = ls.get_user_collection(id)
@@ -70,10 +70,33 @@ def _get_game_lst_dt_plyd_column() -> dict:
     Returns:
         dict: game as key and date as value.
     """
-    matches_url = get_url("matches")
-    matches = pd.read_csv(matches_url)
-    matches.drop_duplicates(subset=["game"], keep="last", inplace=True)
-    return dict(zip(matches["game"], matches["date"]))
+    matches_df = matches.create_matches_table()
+    matches_df.drop_duplicates(subset=["game_name"], keep="last", inplace=True)
+    return dict(zip(matches_df["game_name"], matches_df["date"]))
+
+def get_bgs_by_name(bgs_names: list[str]) -> DataFrame:
+    ls = LudopediaScrapper()
+    all_bgs_metadata = []
+    for bg in bgs_names:
+        bg_metadata = ls.get_game_by_name(bg)
+        all_bgs_metadata.append(bg_metadata)
+    if len(all_bgs_metadata) > 0:
+        return all_bgs_metadata
+    else:
+        raise ValueError(f"No games were found for the following bg_names: {bgs_names}")
+
+def get_bgs(bgs_list: DataFrame) -> list:
+    ls = LudopediaScrapper()
+    bgs = []
+    
+    for bg in bgs_list.to_dict('records'):
+        game = ls.get_bg_metadata(bg["id_jogo"])
+        
+        if game is not None:
+            game["id_dono"] = bg["id_dono"]
+            bgs.append(game)
+            
+    return bgs
 
 
 @timeit
@@ -87,9 +110,11 @@ def get_all_bgs(players: DataFrame) -> list:
         list: all board game metadata
     """
     ls = LudopediaScrapper()
-    all_bgs = _get_players_bgs_ids_from_sheet() + _get_players_bgs_ids_from_ludopedia(
-        players
-    )
+    #@DEPRECATED: remove it later
+    # all_bgs = _get_players_bgs_ids_from_sheet() + _get_players_bgs_ids_from_ludopedia(
+    #    players
+    # )
+    all_bgs = get_players_bgs_ids_from_ludopedia(players)
     bgs_ids = [id for id in all_bgs]
     games_ids = [id for id in bgs_ids]
     bgs = []
@@ -204,10 +229,14 @@ def create_board_games_table(bgs: list[dict]) -> DataFrame:
     ded_bg = {bg["id_jogo"]: bg for bg in bgs}.values()  # deduplicating bgs
     id = [bg["id_jogo"] for bg in ded_bg]
     name = [bg["nm_jogo"] for bg in ded_bg]
-    game_type = [bg["tp_jogo"].upper() for bg in ded_bg]
+    game_type = [
+        bg["tp_jogo"].upper() if bg["tp_jogo"] is not None else None
+        for bg in ded_bg
+    ]
     ludopedia_url = [bg["link"] for bg in ded_bg]
     bgg_url = [
         bgg.get_BGG_url_by_Ludopedia_search(os.path.basename(url))
+        if url is not None else None
         for url in ludopedia_url
     ]
     min_age = [bg["idade_minima"] for bg in ded_bg]
