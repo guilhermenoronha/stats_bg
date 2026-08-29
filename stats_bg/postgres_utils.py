@@ -38,7 +38,7 @@ class PostgresUtils:
         """
         columns = ", ".join(f'"{column}"' for column in columns)
         qry = f'SELECT DISTINCT {columns} FROM {db}.{schema}."GAMES"'
-        with self.engine.connect() as conn:
+        with self.engine.begin() as conn:
             try:
                 return pd.read_sql(qry, conn)
             except:
@@ -56,7 +56,7 @@ class PostgresUtils:
 
 
     def get_table_data(
-        self, db: str, schema: str, table: str, columns: list[str]
+        self, db: str, schema: str, table: str, columns: list[str] = None
     ) -> DataFrame:
         """Get data from a database table.
 
@@ -72,9 +72,12 @@ class PostgresUtils:
         Raises:
             RuntimeError: if the table cannot be read.
         """
-        columns = ", ".join(f'"{column}"' for column in columns)
+        if columns:
+            columns = ", ".join(f'"{column}"' for column in columns)
+        else:
+            columns = "*"
         qry = f'SELECT {columns} FROM {db}.{schema}."{table}"'
-        with self.engine.connect() as conn:
+        with self.engine.begin() as conn:
             try:
                 return pd.read_sql(qry, conn)
             except Exception as exc:
@@ -104,11 +107,14 @@ class PostgresUtils:
             raise ValueError("Mode must be 'append' or 'replace'!")
         if mode == "replace":
             self.truncate_table(schema, table_name)
-        with self.engine.connect() as conn:
+        with self.engine.begin() as conn:
             df.to_sql(name=table_name, con=conn, if_exists="append", schema=schema, index=False)
-            logging.info(
-                f"Table {table_name} was successfully created with {len(df)} rows."
-            )
+            if mode.lower() == "replace":
+                logging.info(
+                    f"Table {table_name} was successfully created with {len(df)} rows."
+                )
+            else:
+                logging.info(f"{len(df)} rows were added to {table_name} table.")
 
 
     def truncate_table(self, schema: str, table_name: str) -> None:
@@ -119,10 +125,26 @@ class PostgresUtils:
             table_name (str): table name
         """
         try:
-            with self.engine.connect() as conn:
+            with self.engine.begin() as conn:
                 conn.execute(text(f'TRUNCATE TABLE {schema}."{table_name}"'))
                 conn.commit()
         except:
             logging.warning(
                 f"Table {table_name} wasn't truncated because it doesn't exist."
             )
+
+    def delete_table_data(self, db: str, schema: str, table_name: str, where_condition: str):
+        """Delete data according to condition specified. Use it with caution.
+
+        Args:
+            db (str): database name
+            schema (str): schema name
+            table_name (str): table name
+            where_condition (str): filter condition to select rows to be deleted. E.g: game_name = 'XYZ'       
+        """
+        with self.engine.begin() as conn:
+            delete_str = f'DELETE FROM  {db}.{schema}."{table_name}" WHERE {where_condition}'
+            logging.warning(f"Deleting data with the following query: {delete_str}")
+            result = conn.execute(text(delete_str))
+            conn.commit()
+            logging.info(f"Query deleted {result.rowcount} rows successfully.")

@@ -5,17 +5,17 @@ from unittest.mock import MagicMock, patch
 from stats_bg.postgres_utils import PostgresUtils
 
 
-def _mock_engine_with_connection():
+def _mock_engine_with_transaction():
     engine = MagicMock()
     conn = MagicMock()
-    engine.connect.return_value.__enter__.return_value = conn
+    engine.begin.return_value.__enter__.return_value = conn
     return engine, conn
 
 
 @patch("stats_bg.postgres_utils.create_engine")
 @patch("stats_bg.postgres_utils.pd.read_sql")
 def test_get_table_data_returns_query_result(mock_read_sql, mock_create_engine):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     expected = pd.DataFrame({"ID": [1], "NAME": ["Catan"]})
     mock_read_sql.return_value = expected
@@ -35,7 +35,7 @@ def test_get_table_data_returns_query_result(mock_read_sql, mock_create_engine):
 def test_get_table_data_raises_runtime_error_on_read_failure(
     mock_create_engine, mock_read_sql
 ):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     mock_read_sql.side_effect = Exception("missing table")
     postgres_utils = PostgresUtils("conn")
@@ -53,7 +53,7 @@ def test_get_table_data_raises_runtime_error_on_read_failure(
 @patch("stats_bg.postgres_utils.create_engine")
 @patch("stats_bg.postgres_utils.pd.read_sql")
 def test_get_games_data_returns_query_result(mock_read_sql, mock_create_engine):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     expected = pd.DataFrame({"ID": [1], "NAME": ["Catan"]})
     mock_read_sql.return_value = expected
@@ -81,7 +81,7 @@ def test_get_games_data_bootstraps_games_table_on_read_failure(
     mock_save_table,
     mock_create_engine,
 ):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
 
     players = pd.DataFrame({"ID": [1], "LUDOPEDIA_NICKNAME": ["nick"]})
@@ -112,7 +112,7 @@ def test_get_games_data_bootstraps_games_table_on_read_failure(
 def test_save_table_replace_truncates_and_appends(
     mock_to_sql, mock_truncate_table, mock_create_engine
 ):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     df = pd.DataFrame({"A": [1, 2]})
     postgres_utils = PostgresUtils("conn")
@@ -131,7 +131,7 @@ def test_save_table_replace_truncates_and_appends(
 def test_save_table_append_does_not_truncate(
     mock_to_sql, mock_truncate_table, mock_create_engine
 ):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     df = pd.DataFrame({"A": [1]})
     postgres_utils = PostgresUtils("conn")
@@ -146,7 +146,7 @@ def test_save_table_append_does_not_truncate(
 
 @patch("stats_bg.postgres_utils.create_engine")
 def test_save_table_invalid_mode_raises_value_error(mock_create_engine):
-    engine, _ = _mock_engine_with_connection()
+    engine, _ = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     df = pd.DataFrame({"A": [1]})
     postgres_utils = PostgresUtils("conn")
@@ -161,7 +161,7 @@ def test_save_table_invalid_mode_raises_value_error(mock_create_engine):
 @patch("stats_bg.postgres_utils.create_engine")
 @patch("stats_bg.postgres_utils.text", side_effect=lambda x: x)
 def test_truncate_table_executes_truncate_and_commit(mock_text, mock_create_engine):
-    engine, conn = _mock_engine_with_connection()
+    engine, conn = _mock_engine_with_transaction()
     mock_create_engine.return_value = engine
     postgres_utils = PostgresUtils("conn")
 
@@ -176,7 +176,7 @@ def test_truncate_table_executes_truncate_and_commit(mock_text, mock_create_engi
 @patch("stats_bg.postgres_utils.create_engine")
 def test_truncate_table_logs_warning_on_failure(mock_create_engine, mock_warning):
     engine = MagicMock()
-    engine.connect.side_effect = Exception("db error")
+    engine.begin.side_effect = Exception("db error")
     mock_create_engine.return_value = engine
     postgres_utils = PostgresUtils("conn")
 
@@ -185,3 +185,28 @@ def test_truncate_table_logs_warning_on_failure(mock_create_engine, mock_warning
     mock_create_engine.assert_called_once_with("conn")
     assert mock_warning.call_count == 1
     assert "wasn't truncated" in mock_warning.call_args[0][0]
+
+@patch("stats_bg.postgres_utils.logging.info")
+@patch("stats_bg.postgres_utils.logging.warning")
+@patch("stats_bg.postgres_utils.create_engine")
+@patch("stats_bg.postgres_utils.text", side_effect=lambda x: x)
+def test_delete_table_data_executes_delete_and_logs_rowcount(
+    mock_text, mock_create_engine, mock_warning, mock_info
+):
+    engine, conn = _mock_engine_with_transaction()
+    result = MagicMock()
+    result.rowcount = 3
+    conn.execute.return_value = result
+    mock_create_engine.return_value = engine
+    postgres_utils = PostgresUtils("conn")
+
+    postgres_utils.delete_table_data("DB", "public", "TBL", '"ID" = 1')
+
+    delete_str = 'DELETE FROM  DB.public."TBL" WHERE "ID" = 1'
+    mock_warning.assert_called_once_with(
+        f"Deleting data with the following query: {delete_str}"
+    )
+    mock_text.assert_called_once_with(delete_str)
+    conn.execute.assert_called_once_with(delete_str)
+    conn.commit.assert_called_once()
+    mock_info.assert_called_once_with("Query deleted 3 rows successfully.")
