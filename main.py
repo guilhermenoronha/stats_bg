@@ -39,7 +39,7 @@ def main():
             db, schema, "PLAYERS", ["ID", "LUDOPEDIA_NICKNAME"]
         )        
         if search == "upsert":
-            # ACHAR MODO DE ADICIONAR UM JOGO COMPRADO POR ALGUEM QUE OUTRA PESSOA TENHA
+            new_bgs = []
             current_owners = pu.get_table_data(db, schema, "BG_OWNERS", ["USER_ID", "GAME_ID"])
             users_bgs = pd.DataFrame(bg.get_players_bgs_ids_from_ludopedia(players))
             # block to delete the owners who don't have in collection anymore.
@@ -47,30 +47,29 @@ def main():
             idx_users = pd.MultiIndex.from_arrays([users_bgs['id_jogo'], users_bgs['id_dono']])
             idx_owners = pd.MultiIndex.from_arrays([current_owners['GAME_ID'], current_owners['USER_ID']])
             deleted_bgs = current_owners[~idx_owners.isin(idx_users)]
-            if len(deleted_bgs) > 0:
+            if not deleted_bgs.empty:
                 # Cria uma lista de strings no formato "(GAME_ID, USER_ID)"
                 tuples = [f'({row["GAME_ID"]}, {row["USER_ID"]})' for _, row in deleted_bgs.iterrows()]
                 where_condition = f'("GAME_ID", "USER_ID") IN ({", ".join(tuples)})'
                 pu.delete_table_data(db, schema, "BG_OWNERS", where_condition)
             # block to add new owners
             added_bgs = users_bgs[~idx_users.isin(idx_owners)]
-            if len(added_bgs) > 0:
+            if not added_bgs.empty:
                 added_bgs = added_bgs.rename(columns={'id_jogo': 'GAME_ID', 'id_dono': 'USER_ID'})
                 pu.save_table(added_bgs, schema, "BG_OWNERS", mode="append")
             # block to add new the boardgames the owners acquired.
             current_bgs = pu.get_table_data(db, schema, "GAMES", ["ID", "NAME"])
-            new_bgs = users_bgs[~users_bgs['id_jogo'].isin(current_bgs["ID"])]
-            new_bgs = bg.get_bgs(new_bgs)
-            if len(new_bgs) > 0:
-                bgs = bg.create_board_games_table(new_bgs)
-                pu.save_table(bgs, schema, "GAMES", mode="append")
+            acquired_bgs = users_bgs[~users_bgs['id_jogo'].isin(current_bgs["ID"])]
+            new_bgs.extend(bg.get_bgs(acquired_bgs))
             # block to add played boardgames without owners
             matches_table = create_matches_table()
             bg_names_without_owners = matches_table[~matches_table["game_name"].isin(current_bgs["NAME"])]
             dedup_bg_names_without_owners = bg_names_without_owners["game_name"].drop_duplicates().to_list()
-            bgs_without_owners = bg.get_bgs_by_name(dedup_bg_names_without_owners)         
-            bgs =  bg.create_board_games_table(bgs_without_owners)
-            pu.save_table(bgs, schema, "GAMES", mode="append")    
+            bgs_without_owners = bg.get_bgs_by_name(dedup_bg_names_without_owners)
+            new_bgs.extend(bgs_without_owners)
+            if new_bgs:
+                new_bgs =  bg.create_board_games_table(new_bgs)
+                pu.save_table(new_bgs, schema, "GAMES", mode="append")    
         elif search == "full_refresh":
             bgs = bg.get_all_bgs(players)
             pu.save_table(bg.create_board_games_table(bgs), schema, "GAMES")

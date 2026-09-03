@@ -11,7 +11,7 @@ from contextlib import closing
 import time
 
 
-class LudopediaScrapper:
+class LudopediaScraper:
 
     def __init__(self, timeout_seconds: int = 30) -> None:
         """Constructor which creates a header for a good request in https://ludopedia.com.br

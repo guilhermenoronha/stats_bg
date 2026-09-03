@@ -1,10 +1,9 @@
 import pytest
 import requests
-import pandas as pd
 from unittest.mock import patch, MagicMock
-from scrapper.ludopedia_scrapper import LudopediaScrapper
+from scraper.ludopedia_scraper import LudopediaScraper
 
-@patch("scrapper.ludopedia_scrapper.Session")
+@patch("scraper.ludopedia_scraper.Session")
 def test_get_ludopedia_response_success(mock_session):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -13,7 +12,7 @@ def test_get_ludopedia_response_success(mock_session):
     mock_session_instance.get.return_value = mock_response
     mock_session.return_value = mock_session_instance
 
-    scraper = LudopediaScrapper()
+    scraper = LudopediaScraper()
     scraper.headers = {"Authorization": "token"}
 
     result = scraper._get_ludopedia_response("http://fake-url")
@@ -25,7 +24,7 @@ def test_get_ludopedia_response_success(mock_session):
         timeout=scraper.request_timeout_seconds,
     )
 
-@patch("scrapper.ludopedia_scrapper.Session")
+@patch("scraper.ludopedia_scraper.Session")
 def test_get_ludopedia_response_error(mock_session):
     mock_response = MagicMock()
     mock_response.status_code = 500
@@ -34,14 +33,14 @@ def test_get_ludopedia_response_error(mock_session):
     mock_session_instance.get.return_value = mock_response
     mock_session.return_value = mock_session_instance
 
-    scraper = LudopediaScrapper()
+    scraper = LudopediaScraper()
     scraper.headers = {"Authorization": "token"}
 
     with pytest.raises(requests.RequestException):
         scraper._get_ludopedia_response("http://fake-url")
 
 
-@patch("scrapper.ludopedia_scrapper.Session")
+@patch("scraper.ludopedia_scraper.Session")
 def test_get_ludopedia_response_rate_limit_error(mock_session):
     mock_response = MagicMock()
     mock_response.status_code = 429
@@ -50,7 +49,7 @@ def test_get_ludopedia_response_rate_limit_error(mock_session):
     mock_session_instance.get.return_value = mock_response
     mock_session.return_value = mock_session_instance
 
-    scraper = LudopediaScrapper()
+    scraper = LudopediaScraper()
     scraper.headers = {"Authorization": "token"}
 
     with pytest.raises(requests.RequestException) as exc_info:

@@ -1,5 +1,5 @@
 import pandas as pd
-from scrapper.ludopedia_scrapper import LudopediaScrapper
+from scraper.ludopedia_scraper import LudopediaScraper
 from pandas import Series, DataFrame
 from stats_bg.sheets import get_url
 from stats_bg.utils import timeit
@@ -15,7 +15,7 @@ def _create_player_id_column(nicknames: Series) -> Series:
     Returns:
         Series: Pandas Series with unique ID for every player
     """
-    ls = LudopediaScrapper()
+    ls = LudopediaScraper()
     ids = nicknames.map(ls.get_user_id,na_action="ignore")
     return ids.astype("Int64")
 
