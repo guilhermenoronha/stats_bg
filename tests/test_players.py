@@ -24,13 +24,13 @@ def test_create_players_table(mock__create_player_id_column, mock_get_url, mock_
 
 
 
-@patch("stats_bg.players.LudopediaScrapper")
-def test_create_player_id_column(mock_ludopedia_scrapper):
+@patch("stats_bg.players.LudopediaScraper")
+def test_create_player_id_column(mock_ludopedia_scraper):
 
     def _mock_ids(x):
         return "1"
 
-    mock_instance = mock_ludopedia_scrapper.return_value
+    mock_instance = mock_ludopedia_scraper.return_value
     mock_instance.get_user_id =  lambda x: _mock_ids(x)
     
     expected_value = pd.Series([1, 1], dtype="Int64")
@@ -39,10 +39,10 @@ def test_create_player_id_column(mock_ludopedia_scrapper):
     assert_series_equal(expected_value, result)
 
 
-@patch("stats_bg.players.LudopediaScrapper")
-def test_create_player_id_column_with_nan(mock_ludopedia_scrapper):
+@patch("stats_bg.players.LudopediaScraper")
+def test_create_player_id_column_with_nan(mock_ludopedia_scraper):
 
-    mock_instance = mock_ludopedia_scrapper.return_value
+    mock_instance = mock_ludopedia_scraper.return_value
     mock_instance.get_user_id = lambda x: 1
 
     nicknames = pd.Series(["George Constanza", None])

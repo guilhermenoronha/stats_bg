@@ -8,14 +8,32 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from contextlib import closing
+import time
 
 
-class LudopediaScrapper:
-    def __init__(self) -> None:
+class LudopediaScraper:
+
+    def __init__(self, timeout_seconds: int = 30) -> None:
         """Constructor which creates a header for a good request in https://ludopedia.com.br
         The user must have an account and a access key on this site before call this constructor
         """
         self.headers = {"Authorization": f'Bearer {config("ACCESS_KEY")}'}
+        self.request_timeout_seconds = timeout_seconds
+        self.session = Session()
+        retry = Retry(
+            total=5, 
+            connect=3,
+            status=5,
+            backoff_factor=2,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+            respect_retry_after_header=True,
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)                
+
 
     def _get_ludopedia_response(self, url: str) -> Response:
         """Method to request the Ludopedia url response. Its append the url with the headers added on constructor
@@ -29,28 +47,24 @@ class LudopediaScrapper:
         Returns:
             Response: the response of the page
         """
-        session = Session()
-
-        retry = Retry(
-            total=5,
-            connect=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET"],
+        response = self.session.get(
+            url=url, headers=self.headers, timeout=self.request_timeout_seconds
         )
 
-        adapter = HTTPAdapter(max_retries=retry)
-
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-
-        response = session.get(url=url, headers=self.headers)
-
         if response.status_code == 200:
+            # Avoiding rating limit
+            time.sleep(2)
             return response
 
+        if response.status_code == 429:
+            raise RequestException(
+                "Ludopedia API rate limit exceeded after retries. "
+                "Try again later or reduce the request frequency."
+            )
+
         raise RequestException(
-            "An error occurred when requesting url. Check if the url or the access_token is correct."
+            f"An error occurred when requesting url. Status code: {response.status_code}. "
+            "Check if the url or the access_token is correct."
         )
 
     def get_user_id(self, username: str) -> str:
@@ -114,17 +128,26 @@ class LudopediaScrapper:
         response = self._get_ludopedia_response(url)
         data = response.json()
         if data.get("total") != 0:
-            id = data["jogos"][0]["id_jogo"]
-            game = self._get_game_by_id(id)
-            if game["nm_jogo"] == name:
-                return game
-            else:
-                raise ValueError(
-                    f'Error! game found is different. Name: {name}. Game found: {game["nm_jogo"]}'
-                )
-        else:
-            logging.warning(f"Error! Game {name} wasn't found!")
-            return {"id_jogo": -1, "nm_jogo": name}
+            for game_metadata in data["jogos"]:
+                id = game_metadata["id_jogo"]
+                game = self._get_game_by_id(id)
+                if game["nm_jogo"].strip() == name:
+                    return game
+        logging.warning(f"Error! Game {name} wasn't found!")
+        id_jogo = sum(ord(c) for c in name) * -1
+        return {
+            "id_jogo": id_jogo,
+            "nm_jogo": name,
+            "nm_original": None,
+            "ano_publicacao": None,
+            "thumb": None,
+            "link": None,
+            "tp_jogo": None,
+            "idade_minima": None,
+            "vl_tempo_jogo": None,
+            "qt_jogadores_min": None,
+            "qt_jogadores_max": None
+        }
 
     def _get_game_by_id(self, id: str) -> dict:
         """Get board game by ID

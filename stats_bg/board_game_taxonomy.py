@@ -1,4 +1,4 @@
-from scrapper.ludopedia_scrapper import LudopediaScrapper
+from scraper.ludopedia_scraper import LudopediaScraper
 from pandas import DataFrame
 import pandas as pd
 
@@ -27,6 +27,6 @@ def create_boardgame_metadata_table(metadata_type: str) -> DataFrame:
         url = "https://ludopedia.com.br/mecanicas"
     else:
         raise ValueError("Error! Invalid option for metadata_type")
-    ls = LudopediaScrapper()
+    ls = LudopediaScraper()
     data = ls.get_ludopedia_taxonomy(url)
     return pd.DataFrame.from_records(data)

@@ -15,9 +15,9 @@ from stats_bg.board_game_taxonomy import create_boardgame_metadata_table
         ("mechanics", "https://ludopedia.com.br/mecanicas"),
     ],
 )
-@patch("stats_bg.board_game_taxonomy.LudopediaScrapper")
-def test_create_boardgame_metadata_table(mock_ludopedia_scrapper, metadata_type, expected_url):
-    scraper = mock_ludopedia_scrapper.return_value
+@patch("stats_bg.board_game_taxonomy.LudopediaScraper")
+def test_create_boardgame_metadata_table(mock_ludopedia_scraper, metadata_type, expected_url):
+    scraper = mock_ludopedia_scraper.return_value
     scraper.get_ludopedia_taxonomy.return_value = [
         {"id": 1, "name": "Adventure"},
         {"id": 2, "name": "Fantasy"},
